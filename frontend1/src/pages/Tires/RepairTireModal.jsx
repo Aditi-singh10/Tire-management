@@ -1,22 +1,21 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { mountTire } from "../../api/busApi";
+import { repairTire } from "../../api/tireApi";
 
-export default function MountTireModal({
-  busId,
+export default function RepairTireModal({
+  tire,
   onClose,
-  onMounted,
+  onRepaired,
 }) {
-  const [tireId, setTireId] = useState("");
-  const [slotPosition, setSlotPosition] = useState("");
+  const [newCode, setNewCode] = useState("");
+  const [maxLifeKm, setMaxLifeKm] = useState("");
 
-  const handleSubmit = async () => {
-    await mountTire({
-      busId,
-      tireId,
-      slotPosition,
+  const handleRepair = async () => {
+    await repairTire(tire._id, {
+      newTireCode: newCode,
+      maxLifeKm: Number(maxLifeKm),
     });
-    onMounted();
+    onRepaired();
   };
 
   return (
@@ -27,21 +26,22 @@ export default function MountTireModal({
         className="bg-white rounded-xl p-6 w-96"
       >
         <h3 className="text-lg font-bold mb-4">
-          Mount Tire
+          Repair Tire {tire.tireCode}
         </h3>
 
         <input
-          placeholder="Tire ID"
+          placeholder="New Tire Code (e.g. A01-R1)"
           className="w-full border p-2 rounded mb-3"
-          value={tireId}
-          onChange={(e) => setTireId(e.target.value)}
+          value={newCode}
+          onChange={(e) => setNewCode(e.target.value)}
         />
 
         <input
-          placeholder="Slot Position (e.g. FRONT_LEFT)"
+          placeholder="Max Life Km"
+          type="number"
           className="w-full border p-2 rounded mb-4"
-          value={slotPosition}
-          onChange={(e) => setSlotPosition(e.target.value)}
+          value={maxLifeKm}
+          onChange={(e) => setMaxLifeKm(e.target.value)}
         />
 
         <div className="flex justify-end gap-2">
@@ -52,10 +52,10 @@ export default function MountTireModal({
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
+            onClick={handleRepair}
             className="bg-blue-600 text-white px-4 py-2 rounded"
           >
-            Mount
+            Repair
           </button>
         </div>
       </motion.div>
