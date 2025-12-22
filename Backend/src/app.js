@@ -1,7 +1,12 @@
-import express from "express";
+const express = require("express");
 
 const app = express();
 
 app.use(express.json());
 
-export default app;
+app.use("/api/buses", require("./routes/busRoute"));
+app.use("/api/tires", require("./routes/tireRoute"));
+app.use("/api/trips", require("./routes/tripRoute"));
+app.use("/api/history", require("./routes/historyRoute"));
+
+module.exports = app;
