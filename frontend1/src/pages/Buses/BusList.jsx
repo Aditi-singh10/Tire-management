@@ -1,53 +1,66 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { getBuses } from "../../api/busApi";
+import AddBusModal from "./AddBusModal";
 
 export default function BusList() {
   const [buses, setBuses] = useState([]);
+  const [showAdd, setShowAdd] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const loadBuses = () =>
     getBuses().then((res) => setBuses(res.data));
+
+  useEffect(() => {
+    loadBuses();
   }, []);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h2 className="text-2xl font-bold mb-6">Buses</h2>
-
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-100 text-slate-600">
-            <tr>
-              <th className="p-4">Bus Number</th>
-              <th className="p-4">Type</th>
-              <th className="p-4">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {buses.map((bus) => (
-              <tr
-                key={bus._id}
-                className="border-t hover:bg-slate-50"
-              >
-                <td className="p-4 font-medium">
-                  {bus.busNumber}
-                </td>
-                <td className="p-4">{bus.type || "-"}</td>
-                <td className="p-4">
-                  <button
-                    onClick={() => navigate(`/buses/${bus._id}`)}
-                    className="text-blue-600 hover:underline"
-                  >
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold">Buses</h2>
+        <button
+          onClick={() => setShowAdd(true)}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-xl shadow"
+        >
+          + Add Bus
+        </button>
       </div>
+
+      {/* Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {buses.map((bus) => (
+          <motion.div
+            key={bus._id}
+            whileHover={{ scale: 1.03 }}
+            className="bg-white rounded-2xl p-6 shadow-lg cursor-pointer"
+            onClick={() => navigate(`/buses/${bus._id}`)}
+          >
+            <h3 className="text-xl font-bold">
+              {bus.busNumber}
+            </h3>
+            <p className="text-slate-500 mt-1">
+              Type: {bus.type || "N/A"}
+            </p>
+
+            <div className="mt-4 text-sm text-blue-600 font-medium">
+              View Details →
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {showAdd && (
+        <AddBusModal
+          onClose={() => setShowAdd(false)}
+          onCreated={() => {
+            setShowAdd(false);
+            loadBuses();
+          }}
+        />
+      )}
     </motion.div>
   );
 }

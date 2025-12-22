@@ -1,21 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { mountTire } from "../../api/busApi";
+import { getTires } from "../../api/tireApi";
 
 export default function MountTireModal({
   busId,
+  slotPosition,
   onClose,
   onMounted,
 }) {
+  const [tires, setTires] = useState([]);
   const [tireId, setTireId] = useState("");
-  const [slotPosition, setSlotPosition] = useState("");
 
-  const handleSubmit = async () => {
-    await mountTire({
-      busId,
-      tireId,
-      slotPosition,
-    });
+  useEffect(() => {
+    getTires().then((res) => setTires(res.data));
+  }, []);
+
+  const handleMount = async () => {
+    await mountTire({ busId, tireId, slotPosition });
     onMounted();
   };
 
@@ -24,36 +26,35 @@ export default function MountTireModal({
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-xl p-6 w-96"
+        className="bg-white rounded-2xl p-6 w-96"
       >
-        <h3 className="text-lg font-bold mb-4">
-          Mount Tire
+        <h3 className="text-xl font-bold mb-4">
+          Mount Tire ({slotPosition})
         </h3>
 
-        <input
-          placeholder="Tire ID"
-          className="w-full border p-2 rounded mb-3"
+        <select
+          className="w-full border p-3 rounded-lg mb-4"
           value={tireId}
           onChange={(e) => setTireId(e.target.value)}
-        />
-
-        <input
-          placeholder="Slot Position (e.g. FRONT_LEFT)"
-          className="w-full border p-2 rounded mb-4"
-          value={slotPosition}
-          onChange={(e) => setSlotPosition(e.target.value)}
-        />
+        >
+          <option value="">Select Tire</option>
+          {tires.map((tire) => (
+            <option key={tire._id} value={tire._id}>
+              {tire.tireCode}
+            </option>
+          ))}
+        </select>
 
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded text-slate-600"
+            className="px-4 py-2 text-slate-600"
           >
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={handleMount}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-lg"
           >
             Mount
           </button>
