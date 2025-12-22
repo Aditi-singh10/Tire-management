@@ -21,7 +21,7 @@ const TireHistorySchema = new mongoose.Schema(
 
     kmServed: {
       type: Number,
-      required: true,
+      default: 0, //not required at start
     },
 
     startTime: {
@@ -31,13 +31,13 @@ const TireHistorySchema = new mongoose.Schema(
 
     endTime: {
       type: Date,
-      required: true,
+      default: null, //filled later
     },
 
     removalReason: {
       type: String,
       enum: ["trip_end", "puncture", "expired", "repair"],
-      required: true,
+      default: null, // filled later
     },
   },
   { timestamps: true }

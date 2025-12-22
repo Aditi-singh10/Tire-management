@@ -58,18 +58,22 @@ exports.updateTireLifecycle = async (tireId, kmAdded) => {
   const tire = await Tire.findById(tireId);
   if (!tire) throw new Error("Tire not found");
 
+  // Update life km
+  tire.currentLifeKm += kmAdded;
+
+  // Calculate lifecycle
   const lifecycle = calculateTireLifecycle({
-    trips: [{ distance: kmAdded }],
+    trips: [{ distance: tire.currentLifeKm }],
     maxLifecycleDistance: tire.maxLifeKm,
   });
 
-  tire.totalDistanceUsed += kmAdded;
-  tire.remainingLifeKm = Math.max(
-    tire.maxLifeKm - tire.totalDistanceUsed,
-    0
-  );
-  tire.wearPercentage = lifecycle.wearPercentage;
-  tire.status = lifecycle.status.toLowerCase();
+  // MAP lifecycle health → VALID tire.status
+  if (lifecycle.status === "EXPIRED") {
+    tire.status = "expired";
+  } else if (tire.status !== "mounted") {
+    // keep mounted if currently in use
+    tire.status = "available";
+  }
 
   await tire.save();
   return tire;
