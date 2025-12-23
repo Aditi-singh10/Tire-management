@@ -4,7 +4,7 @@ const TripEventSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["puncture", "replacement","expired"],
+      enum: ["puncture", "replacement", "expired"],
       required: true,
     },
 
@@ -52,6 +52,18 @@ const TripSchema = new mongoose.Schema(
 
     endTime: {
       type: Date,
+      default: null,
+    },
+
+    endStatus: {
+      type: String,
+      enum: ["completed", "aborted"],
+      default: null,
+    },
+
+    endReason: {
+      type: String,
+      default: null, // user-entered reason
     },
 
     totalDistance: {

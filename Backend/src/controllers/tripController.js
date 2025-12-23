@@ -20,7 +20,11 @@ exports.addTripEvent = async (req, res) => {
 
 exports.endTrip = async (req, res) => {
   try {
-    const result = await tripService.endTrip(req.params.tripId);
+    const result = await tripService.endTrip(
+      req.params.tripId,
+      req.body // { status, reason }
+    );
+
     res.json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -35,7 +39,6 @@ exports.getTrip = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-
 
 exports.getAllTrips = async (req, res) => {
   try {

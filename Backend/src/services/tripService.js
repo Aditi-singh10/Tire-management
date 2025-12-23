@@ -215,7 +215,63 @@ exports.endTrip = async (tripId) => {
     session.endSession();
     throw err;
   }
+};exports.endTrip = async (tripId, { status = "completed", reason = null } = {}) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const trip = await Trip.findById(tripId).session(session);
+    if (!trip) throw new Error("Trip not found");
+
+    if (trip.endTime) {
+      throw new Error("Trip already ended");
+    }
+
+    // VALIDATION
+    if (!["completed", "aborted"].includes(status)) {
+      throw new Error("Invalid trip end status");
+    }
+
+    if (status === "aborted" && (!reason || reason.trim() === "")) {
+      throw new Error("End reason is required for aborted trips");
+    }
+
+    const activeHistories = await TireHistory.find({
+      busId: trip.busId,
+      endTime: null,
+    }).session(session);
+
+    for (const history of activeHistories) {
+      history.kmServed = trip.totalDistance;
+      history.endTime = new Date();
+      history.removalReason = "trip_end"; // system reason
+      await history.save({ session });
+
+      await updateTireLifecycle(history.tireId, history.kmServed, session);
+    }
+
+    trip.endTime = new Date();
+    trip.endStatus = status;
+    trip.endReason = status === "aborted" ? reason : null;
+
+    await trip.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      message:
+        status === "completed"
+          ? "Trip completed successfully"
+          : "Trip aborted",
+    };
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    throw err;
+  }
 };
+
 
 exports.getTrip = async (tripId) => {
   if (!tripId || !mongoose.Types.ObjectId.isValid(tripId)) {

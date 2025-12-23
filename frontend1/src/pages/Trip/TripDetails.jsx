@@ -3,12 +3,16 @@ import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getTripById, endTrip } from "../../api/tripApi";
 import AddEventModal from "./addEventModal";
+import EndTripModal from "./EndTrip";
+import { useNavigate } from "react-router-dom";
 
 export default function TripDetails() {
+  const navigate = useNavigate();
   const { id: tripId } = useParams();
   const [trip, setTrip] = useState(null);
   const [showEvent, setShowEvent] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
 
   const loadTrip = async () => {
     const res = await getTripById(tripId);
@@ -60,15 +64,10 @@ export default function TripDetails() {
           </button>
 
           <button
-            onClick={async () => {
-              setEnding(true);
-              await endTrip(tripId);
-              await loadTrip();
-              setEnding(false);
-            }}
+            onClick={() => setShowEndModal(true)}
             className="bg-red-600 text-white px-4 py-2 rounded-lg"
           >
-            {ending ? "Ending..." : "End Trip"}
+            End Trip
           </button>
         </div>
       )}
@@ -100,6 +99,14 @@ export default function TripDetails() {
             setShowEvent(false);
             loadTrip();
           }}
+        />
+      )}
+
+      {showEndModal && (
+        <EndTripModal
+          tripId={trip._id}
+          onClose={() => setShowEndModal(false)}
+          onSuccess={() => navigate("/trips")}
         />
       )}
     </motion.div>
