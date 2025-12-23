@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Wrench } from "lucide-react";
+import { Wrench, PlugZap } from "lucide-react";
 import clsx from "clsx";
 
 const statusColor = {
@@ -10,7 +10,11 @@ const statusColor = {
   repaired: "bg-purple-100 text-purple-700",
 };
 
-export default function TireCard({ tire, onRepair }) {
+export default function TireCard({
+  tire,
+  onRepair,
+  onMount,
+}) {
   const lifePercent = Math.min(
     (tire.currentLifeKm / tire.maxLifeKm) * 100,
     100
@@ -18,8 +22,8 @@ export default function TireCard({ tire, onRepair }) {
 
   return (
     <motion.div
-      whileHover={{ scale: 1.03 }}
-      className="bg-white rounded-xl shadow p-6 flex flex-col justify-between"
+      whileHover={{ scale: 1.04 }}
+      className="bg-white rounded-2xl shadow p-6 flex flex-col justify-between"
     >
       <div>
         <div className="flex justify-between items-start">
@@ -28,7 +32,7 @@ export default function TireCard({ tire, onRepair }) {
           </h3>
           <span
             className={clsx(
-              "text-xs px-3 py-1 rounded-full font-medium",
+              "text-xs px-3 py-1 rounded-full font-semibold",
               statusColor[tire.status]
             )}
           >
@@ -37,33 +41,47 @@ export default function TireCard({ tire, onRepair }) {
         </div>
 
         <p className="text-sm text-slate-500 mt-2">
-          Max Life: {tire.maxLifeKm} km
+          Life: {tire.currentLifeKm} / {tire.maxLifeKm} km
         </p>
 
         <div className="mt-4">
-          <div className="flex justify-between text-sm mb-1">
+          <div className="flex justify-between text-xs mb-1">
             <span>Usage</span>
             <span>{Math.round(lifePercent)}%</span>
           </div>
 
           <div className="w-full bg-slate-200 h-2 rounded-full">
-            <div
-              className="h-2 rounded-full bg-blue-600"
-              style={{ width: `${lifePercent}%` }}
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${lifePercent}%` }}
+              className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600"
             />
           </div>
         </div>
       </div>
 
-      {tire.status === "expired" && (
-        <button
-          onClick={onRepair}
-          className="mt-4 flex items-center justify-center gap-2 bg-slate-900 text-white py-2 rounded-lg hover:bg-slate-800"
-        >
-          <Wrench size={16} />
-          Repair Tire
-        </button>
-      )}
+      {/* Actions */}
+      <div className="mt-5 flex gap-2">
+        {tire.status === "expired" && (
+          <button
+            onClick={onRepair}
+            className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white py-2 rounded-lg"
+          >
+            <Wrench size={16} />
+            Repair
+          </button>
+        )}
+
+        {tire.status === "available" && (
+          <button
+            onClick={onMount}
+            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg"
+          >
+            <PlugZap size={16} />
+            Mount
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 }
