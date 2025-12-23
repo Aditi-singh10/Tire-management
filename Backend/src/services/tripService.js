@@ -52,69 +52,129 @@ exports.startTrip = async ({ busId, totalDistance }) => {
  * Add Trip Event (puncture / replacement)
  */
 exports.addEvent = async (tripId, eventData) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const MAX_RETRIES = 3;
 
-  try {
-    const trip = await Trip.findById(tripId).session(session);
-    if (!trip) throw new Error("Trip not found");
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    const activeHistory = await TireHistory.findOne({
-      tireId: eventData.removedTireId,
-      endTime: null,
-    }).session(session);
+    try {
+      console.log(`🟡 addEvent attempt ${attempt}`);
 
-    activeHistory.kmServed = eventData.distanceAtEvent;
-    activeHistory.endTime = new Date();
-    activeHistory.removalReason = "puncture";
-    await activeHistory.save({ session });
+      const trip = await Trip.findById(tripId).session(session);
+      if (!trip) throw new Error("Trip not found");
 
-    await updateTireLifecycle(
-      eventData.removedTireId,
-      eventData.distanceAtEvent
-    );
+      /* ✅ VALIDATIONS — MUST BE HERE */
+      if (eventData.distanceAtEvent <= 0) {
+        throw new Error("Distance must be greater than 0");
+      }
 
-    await Tire.findByIdAndUpdate(
-      eventData.removedTireId,
-      { status: "punctured" },
-      { session }
-    );
+      if (eventData.distanceAtEvent > trip.totalDistance) {
+        throw new Error("Event distance exceeds trip distance");
+      }
 
-    await BusTireSlot.findOneAndUpdate(
-      { busId: trip.busId, slotPosition: eventData.slotPosition },
-      { tireId: eventData.installedTireId },
-      { session }
-    );
+      const duplicateEvent = trip.events.find(
+        (e) =>
+          e.slotPosition === eventData.slotPosition &&
+          e.distanceAtEvent === eventData.distanceAtEvent
+      );
 
-    await TireHistory.create(
-      [
-        {
-          tireId: eventData.installedTireId,
-          busId: trip.busId,
-          slotPosition: eventData.slotPosition,
-          kmServed: 0,
-          startTime: new Date(),
-        },
-      ],
-      { session }
-    );
+      if (duplicateEvent) {
+        throw new Error("Duplicate event at same distance");
+      }
 
-    await Tire.findByIdAndUpdate(
-      eventData.installedTireId,
-      { status: "mounted" },
-      { session }
-    );
+      // REQUIRED FIELDS VALIDATION
+      if (!eventData.type) {
+        throw new Error("Event type is required");
+      }
 
-    trip.events.push(eventData);
-    await trip.save({ session });
+      if (!eventData.installedTireId) {
+        throw new Error("Replacement tire is required");
+      }
 
-    await session.commitTransaction();
-    session.endSession();
-    return trip;
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
+      const activeHistory = await TireHistory.findOne({
+        tireId: eventData.removedTireId,
+        endTime: null,
+      }).session(session);
+
+      if (!activeHistory) {
+        throw new Error("Active tire history not found");
+      }
+
+      /* close old tire history */
+      activeHistory.kmServed = eventData.distanceAtEvent;
+      activeHistory.endTime = new Date();
+      activeHistory.removalReason = eventData.type;
+      await activeHistory.save({ session });
+
+      await updateTireLifecycle(
+        eventData.removedTireId,
+        eventData.distanceAtEvent,
+        session
+      );
+      const removedTireStatus =
+        eventData.type === "puncture" ? "punctured" : "expired";
+
+      await Tire.findByIdAndUpdate(
+        eventData.removedTireId,
+        { status: removedTireStatus },
+        { session }
+      );
+
+      await BusTireSlot.findOneAndUpdate(
+        { busId: trip.busId, slotPosition: eventData.slotPosition },
+        { tireId: eventData.installedTireId },
+        { session }
+      );
+
+      await TireHistory.create(
+        [
+          {
+            tireId: eventData.installedTireId,
+            busId: trip.busId,
+            slotPosition: eventData.slotPosition,
+            kmServed: 0,
+            startTime: new Date(),
+          },
+        ],
+        { session }
+      );
+
+      await Tire.findByIdAndUpdate(
+        eventData.installedTireId,
+        { status: "mounted" },
+        { session }
+      );
+
+      trip.events.push({
+        type: eventData.type,
+        slotPosition: eventData.slotPosition,
+        removedTireId: eventData.removedTireId,
+        installedTireId: eventData.installedTireId,
+        distanceAtEvent: eventData.distanceAtEvent,
+        eventTime: new Date(),
+      });
+
+      await trip.save({ session });
+
+      await session.commitTransaction();
+      session.endSession();
+
+      console.log("✅ addEvent succeeded");
+      return trip;
+    } catch (err) {
+      await session.abortTransaction();
+      session.endSession();
+
+      console.error(`🔴 addEvent failed attempt ${attempt}`, err.message);
+
+      if (err.message.includes("Write conflict") && attempt < MAX_RETRIES) {
+        console.log("🔁 Retrying transaction...");
+        continue;
+      }
+
+      throw err;
+    }
   }
 };
 
@@ -140,7 +200,7 @@ exports.endTrip = async (tripId) => {
       history.removalReason = "trip_end";
       await history.save({ session });
 
-      await updateTireLifecycle(history.tireId, history.kmServed);
+      await updateTireLifecycle(history.tireId, history.kmServed, session);
     }
 
     trip.endTime = new Date();
@@ -175,8 +235,5 @@ exports.getTrip = async (tripId) => {
 };
 
 exports.getAllTrips = async () => {
-  return await Trip.find()
-    .populate("busId")
-    .sort({ createdAt: -1 });
+  return await Trip.find().populate("busId").sort({ createdAt: -1 });
 };
-

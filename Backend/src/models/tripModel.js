@@ -4,7 +4,7 @@ const TripEventSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["puncture", "replacement"],
+      enum: ["puncture", "replacement","expired"],
       required: true,
     },
 
