@@ -9,8 +9,7 @@ export default function BusList() {
   const [showAdd, setShowAdd] = useState(false);
   const navigate = useNavigate();
 
-  const loadBuses = () =>
-    getBuses().then((res) => setBuses(res.data));
+  const loadBuses = () => getBuses().then((res) => setBuses(res.data));
 
   useEffect(() => {
     loadBuses();
@@ -38,11 +37,12 @@ export default function BusList() {
             className="bg-white rounded-2xl p-6 shadow-lg cursor-pointer"
             onClick={() => navigate(`/buses/${bus._id}`)}
           >
-            <h3 className="text-xl font-bold">
-              {bus.busNumber}
-            </h3>
-            <p className="text-slate-500 mt-1">
+            <h3 className="text-xl font-bold">{bus.busNumber}</h3>
+            {/* <p className="text-slate-500 mt-1">
               Type: {bus.type || "N/A"}
+            </p> */}
+            <p className="text-slate-500 mt-1">
+              Slots: <span className="font-medium">{bus.totalSlots}</span>
             </p>
 
             <div className="mt-4 text-sm text-blue-600 font-medium">
