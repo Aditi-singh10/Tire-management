@@ -28,5 +28,20 @@ exports.endTrip = async (req, res) => {
 };
 
 exports.getTrip = async (req, res) => {
-  res.json(await tripService.getTrip(req.params.tripId));
+  try {
+    const trip = await tripService.getTrip(req.params.tripId);
+    res.json(trip);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
+exports.getAllTrips = async (req, res) => {
+  try {
+    const trips = await tripService.getAllTrips();
+    res.json(trips);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };

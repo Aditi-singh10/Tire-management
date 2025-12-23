@@ -1,20 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import api from "../../api/axios";
 import { addTripEvent } from "../../api/tripApi";
 
 export default function AddEventModal({ tripId, onClose }) {
-  const [removedTireId, setRemovedTireId] = useState("");
-  const [installedTireId, setInstalledTireId] = useState("");
+  const [slots, setSlots] = useState([]);
   const [slotPosition, setSlotPosition] = useState("");
   const [distanceAtEvent, setDistanceAtEvent] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleAddEvent = async () => {
+  useEffect(() => {
+    const loadSlots = async () => {
+      // get trip → extract busId
+      const tripRes = await api.get(`/trips/${tripId}`);
+      const busId = tripRes.data.busId._id;
+
+      //  get mounted slots for that bus
+      const slotRes = await api.get(`/bus-tire-slots/${busId}`);
+
+      setSlots(slotRes.data);
+    };
+
+    loadSlots();
+  }, [tripId]);
+
+  const handleAdd = async () => {
+    if (!slotPosition || !distanceAtEvent) return;
+
+    setLoading(true);
+
     await addTripEvent(tripId, {
-      removedTireId,
-      installedTireId,
+      type: "puncture",
       slotPosition,
       distanceAtEvent: Number(distanceAtEvent),
     });
+
+    setLoading(false);
     onClose();
   };
 
@@ -23,53 +44,41 @@ export default function AddEventModal({ tripId, onClose }) {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-xl p-6 w-96"
+        className="bg-white p-6 rounded-xl w-96"
       >
-        <h3 className="text-lg font-bold mb-4">
-          Add Puncture Event
-        </h3>
+        <h3 className="font-bold mb-4">Add Trip Event</h3>
 
-        <input
-          placeholder="Removed Tire ID"
-          className="w-full border p-2 rounded mb-2"
-          value={removedTireId}
-          onChange={(e) => setRemovedTireId(e.target.value)}
-        />
-
-        <input
-          placeholder="Installed Tire ID"
-          className="w-full border p-2 rounded mb-2"
-          value={installedTireId}
-          onChange={(e) => setInstalledTireId(e.target.value)}
-        />
-
-        <input
-          placeholder="Slot Position"
-          className="w-full border p-2 rounded mb-2"
+        {/* Slot dropdown */}
+        <select
+          className="w-full border p-2 mb-3 rounded"
           value={slotPosition}
           onChange={(e) => setSlotPosition(e.target.value)}
-        />
+        >
+          <option value="">Select Slot</option>
+          {slots.map((s) => (
+            <option key={s._id} value={s.slotPosition}>
+              {s.slotPosition} — {s.tireId.tireCode}
+            </option>
+          ))}
+        </select>
 
+        {/* Distance */}
         <input
-          placeholder="Distance at Event (km)"
           type="number"
-          className="w-full border p-2 rounded mb-4"
+          placeholder="Distance at event (km)"
+          className="w-full border p-2 mb-4 rounded"
           value={distanceAtEvent}
           onChange={(e) => setDistanceAtEvent(e.target.value)}
         />
 
         <div className="flex justify-end gap-2">
+          <button onClick={onClose}>Cancel</button>
           <button
-            onClick={onClose}
-            className="px-4 py-2 rounded text-slate-600"
+            onClick={handleAdd}
+            disabled={loading}
+            className="bg-orange-600 text-white px-4 py-2 rounded-lg"
           >
-            Cancel
-          </button>
-          <button
-            onClick={handleAddEvent}
-            className="bg-orange-600 text-white px-4 py-2 rounded"
-          >
-            Add Event
+            {loading ? "Adding..." : "Add Event"}
           </button>
         </div>
       </motion.div>

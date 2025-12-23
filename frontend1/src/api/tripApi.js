@@ -9,5 +9,9 @@ export const addTripEvent = (tripId, data) =>
 export const endTrip = (tripId) =>
   api.post(`/trips/${tripId}/end`);
 
-export const getTripById = (tripId) =>
-  api.get(`/trips/${tripId}`);
+export const getTripById = (tripId) => {
+  if (!tripId) {
+    return Promise.reject("Trip ID missing");
+  }
+  return api.get(`/trips/${tripId}`);
+};

@@ -156,3 +156,27 @@ exports.endTrip = async (tripId) => {
     throw err;
   }
 };
+
+exports.getTrip = async (tripId) => {
+  if (!tripId || !mongoose.Types.ObjectId.isValid(tripId)) {
+    throw new Error("Invalid Trip ID");
+  }
+
+  const trip = await Trip.findById(tripId)
+    .populate("busId")
+    .populate("events.removedTireId")
+    .populate("events.installedTireId");
+
+  if (!trip) {
+    throw new Error("Trip not found");
+  }
+
+  return trip;
+};
+
+exports.getAllTrips = async () => {
+  return await Trip.find()
+    .populate("busId")
+    .sort({ createdAt: -1 });
+};
+
