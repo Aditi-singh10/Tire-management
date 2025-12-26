@@ -30,49 +30,48 @@ export default function TripDetails() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <h2 className="text-2xl font-bold mb-4">Trip Details</h2>
 
-     {/* Summary */}
-<div className="bg-white p-4 rounded-xl shadow mb-6">
-  <p>
-    <span className="text-slate-500">Bus:</span>{" "}
-    <b>{trip.busId.busNumber}</b>
-  </p>
+      {/* Summary */}
+      <div className="bg-white p-4 rounded-xl shadow mb-6">
+        <p>
+          <span className="text-slate-500">Bus:</span>{" "}
+          <b>{trip.busId.busNumber}</b>
+        </p>
 
-  <p>
-    <span className="text-slate-500">
-      {trip.endStatus === "aborted"
-        ? "Distance Travelled:"
-        : "Planned Distance:"}
-    </span>{" "}
-    <span className="font-medium">
-      {trip.endStatus === "aborted"
-        ? trip.actualDistance
-        : trip.totalDistance}{" "}
-      km
-    </span>
-  </p>
+        <p>
+          <span className="text-slate-500">
+            {trip.endStatus === "aborted"
+              ? "Distance Travelled:"
+              : "Planned Distance:"}
+          </span>{" "}
+          <span className="font-medium">
+            {trip.endStatus === "aborted"
+              ? trip.actualDistance
+              : trip.totalDistance}{" "}
+            km
+          </span>
+        </p>
 
-  <p>
-    <span className="text-slate-500">Status:</span>{" "}
-    {trip.endStatus === "aborted" ? (
-      <span className="text-red-600 font-semibold">Aborted</span>
-    ) : isActive ? (
-      <span className="text-orange-600 font-semibold">Ongoing</span>
-    ) : (
-      <span className="text-green-600 font-semibold">Completed</span>
-    )}
-  </p>
+        <p>
+          <span className="text-slate-500">Status:</span>{" "}
+          {trip.endStatus === "aborted" ? (
+            <span className="text-red-600 font-semibold">Aborted</span>
+          ) : isActive ? (
+            <span className="text-orange-600 font-semibold">Ongoing</span>
+          ) : (
+            <span className="text-green-600 font-semibold">Completed</span>
+          )}
+        </p>
 
-  {/* Reason — ONLY FOR ABORTED */}
-  {trip.endStatus === "aborted" && (
-    <p>
-      <span className="text-slate-500">Reason:</span>{" "}
-      <span className="text-red-500 font-medium">
-        {trip.endReason || "—"}
-      </span>
-    </p>
-  )}
-</div>
-
+        {/* Reason — ONLY FOR ABORTED */}
+        {trip.endStatus === "aborted" && (
+          <p>
+            <span className="text-slate-500">Reason:</span>{" "}
+            <span className="text-red-500 font-medium">
+              {trip.endReason || "—"}
+            </span>
+          </p>
+        )}
+      </div>
 
       {/* Actions */}
       {isActive && (

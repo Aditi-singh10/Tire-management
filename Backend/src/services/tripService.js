@@ -25,39 +25,28 @@ exports.endTrip = async (tripId, body) => {
   let distance = 0;
 
   if (endStatus === "completed") {
-    distance = Number(trip.totalDistance || 0);
-    trip.actualDistance = trip.totalDistance;
-  } else if (endStatus === "aborted") {
+    distance = Number(trip.totalDistance);
+    trip.actualDistance = distance; 
+  }
+
+  if (endStatus === "aborted") {
     if (actualDistance === undefined || actualDistance === null) {
       throw new Error("Actual distance required for aborted trip");
     }
 
     distance = Number(actualDistance);
-    trip.actualDistance = distance;
+    trip.actualDistance = distance; 
   }
 
-  //  HARD SAFETY CHECK
   if (Number.isNaN(distance)) {
-    throw new Error("Distance calculation failed (NaN)");
+    throw new Error("Distance calculation failed");
   }
 
   trip.endStatus = endStatus;
   trip.endReason = endReason || null;
   trip.endTime = new Date();
+
   await trip.save();
-
-  //  UPDATE MOUNTED TIRES SAFELY
-  const tires = await Tire.find({ status: "mounted" });
-
-  for (const tire of tires) {
-    tire.currentLifeKm = Number(tire.currentLifeKm || 0) + distance;
-
-    if (tire.currentLifeKm >= tire.maxLifeKm) {
-      tire.status = "expired";
-    }
-
-    await tire.save();
-  }
 
   return trip;
 };
