@@ -14,13 +14,16 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
     let payload;
 
     if (endType === "completed") {
-      payload = { endType: "completed" };
+      payload = {
+        endStatus: "completed", //  CORRECT FIELD
+      };
     } else {
       if (!distance || Number(distance) <= 0) return;
+
       payload = {
-        endType: "aborted", // ✅ FIXED
+        endStatus: "aborted", //  CORRECT FIELD
         actualDistance: Number(distance),
-        reason,
+        endReason: reason || null,
       };
     }
 

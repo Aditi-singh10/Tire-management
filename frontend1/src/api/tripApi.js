@@ -6,8 +6,8 @@ export const startTrip = (data) =>
 export const addTripEvent = (tripId, data) =>
   api.post(`/trips/${tripId}/event`, data);
 
-export const endTrip = (tripId) =>
-  api.post(`/trips/${tripId}/end`);
+export const endTrip = (tripId, data) =>
+  api.post(`/trips/${tripId}/end`, data);
 
 export const getTripById = (tripId) => {
   if (!tripId) {

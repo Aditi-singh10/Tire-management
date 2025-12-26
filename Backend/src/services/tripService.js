@@ -93,7 +93,7 @@ exports.addTripEvent = async (tripId, data) => {
 
   await trip.save();
 
-  /* 2️⃣ UPDATE TIRE STATUS */
+  /*  UPDATE TIRE STATUS */
   await Tire.findByIdAndUpdate(removedTireId, {
     status: type === "puncture" ? "damaged" : "expired"
   });
