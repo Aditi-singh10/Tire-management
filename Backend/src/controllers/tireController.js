@@ -20,3 +20,18 @@ exports.getTireById = async (req, res) => {
 exports.repairTire = async (req, res) => {
   res.json(await tireService.repairTire(req.params.id));
 };
+
+exports.checkTireUsability = async (req, res) => {
+  try {
+    const { requiredKm } = req.body;
+
+    await tireService.canTireRunDistance(
+      req.params.id,
+      Number(requiredKm)
+    );
+
+    res.json({ usable: true });
+  } catch (e) {
+    res.status(400).json({ usable: false, message: e.message });
+  }
+};

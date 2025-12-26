@@ -37,7 +37,7 @@ export default function TireList() {
         ))}
       </div>
 
-      {/* ✅ MODAL */}
+      {/* MODAL */}
       {showAdd && (
         <AddTireModal
           onClose={() => setShowAdd(false)}

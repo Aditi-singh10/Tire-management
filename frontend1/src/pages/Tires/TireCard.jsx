@@ -12,6 +12,7 @@ export default function TireCard({ tire }) {
 
   return (
     <motion.div className="bg-white rounded-xl shadow p-5">
+      
       <div className="flex justify-between mb-2">
         <h3 className="font-bold">{tireCode}</h3>
         <span className="text-xs px-2 py-1 rounded bg-gray-100">
