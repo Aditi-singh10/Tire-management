@@ -27,15 +27,3 @@ exports.getTrip = async (req, res) => {
 exports.getAllTrips = async (req, res) => {
   res.json(await tripService.getAllTrips());
 };
-
-exports.addTripEvent = async (req, res) => {
-  try {
-    const result = await tripService.addTripEvent(
-      req.params.tripId,
-      req.body
-    );
-    res.status(201).json(result);
-  } catch (e) {
-    res.status(400).json({ message: e.message });
-  }
-};

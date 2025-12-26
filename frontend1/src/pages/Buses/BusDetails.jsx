@@ -29,7 +29,7 @@ export default function BusDetails() {
 
   if (!bus) return null;
 
-  // 🔑 CREATE VIRTUAL SLOTS
+  //  CREATE VIRTUAL SLOTS
   const allSlots = Array.from({ length: bus.totalSlots }, (_, i) => {
     const slotPosition = `slot-${i + 1}`;
     const mountedSlot = dbSlots.find(
@@ -53,9 +53,9 @@ export default function BusDetails() {
         🚍 Bus {bus.busNumber}
       </h2>
 
-      {/* ✅ HISTORY BUTTON */}
+      {/* HISTORY BUTTON */}
       <button
-        onClick={() => navigate(`/history/bus/${bus._id}`)}
+        onClick={() => navigate(`/history/bus-summary/${bus._id}`)}
         className="mb-6 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700"
       >
         View Tire History

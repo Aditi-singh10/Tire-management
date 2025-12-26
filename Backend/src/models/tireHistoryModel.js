@@ -13,8 +13,8 @@ const TireHistorySchema = new mongoose.Schema(
       ref: "Bus",
       required: true,
     },
-
-    // ✅ NEW (OPTIONAL) – TRIP LINK
+    
+    //TRIP LINK
     tripId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Trip",

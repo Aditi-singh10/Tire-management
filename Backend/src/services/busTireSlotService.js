@@ -1,20 +1,30 @@
 const BusTireSlot = require("../models/busTireSlotModel");
 const Tire = require("../models/tireModel");
+const TireHistory = require("../models/tireHistoryModel");
+const Trip = require("../models/tripModel");
 
 /**
  * MOUNT TIRE
  */
 exports.mountTireToBus = async ({ busId, tireId, slotPosition }) => {
-  // Check if slot already occupied
   const existingSlot = await BusTireSlot.findOne({ busId, slotPosition });
   if (existingSlot) {
     throw new Error("Slot already occupied");
   }
 
-  // Update tire status
+  //  Update tire status (KEEP)
   await Tire.findByIdAndUpdate(tireId, { status: "mounted" });
 
-  // Create slot entry
+  //  Create TireHistory (NEW — THIS WAS MISSING)
+  await TireHistory.create({
+    tireId,
+    busId,
+    tripId: null,             
+    slotPosition,
+    startTime: new Date(),
+  });
+
+  //  Create BusTireSlot (KEEP)
   return await BusTireSlot.create({
     busId,
     tireId,
@@ -22,44 +32,50 @@ exports.mountTireToBus = async ({ busId, tireId, slotPosition }) => {
   });
 };
 
+
 /**
  * UNMOUNT TIRE (FIXED)
  */
-exports.unmountTireFromBus = async ({ busId, slotPosition, reason }) => {
+exports.unmountTireFromBus = async ({ busId, slotPosition, reason, kmServed = 0 }) => {
   const slot = await BusTireSlot.findOne({ busId, slotPosition });
-
   if (!slot) {
     throw new Error("Slot already empty");
   }
 
-  // Decide tire status based on reason
+  // Update tire status (KEEP YOUR LOGIC)
   let newStatus = "available";
+  if (reason === "Puncture") newStatus = "repair";
+  if (reason === "Wear") newStatus = "scrap";
+  if (reason === "Maintenance") newStatus = "maintenance";
 
-  switch (reason) {
-    case "Puncture":
-      newStatus = "repair";
-      break;
-    case "Wear":
-      newStatus = "scrap";
-      break;
-    case "Maintenance":
-      newStatus = "maintenance";
-      break;
-    case "Replacement":
-      newStatus = "available";
-      break;
-    default:
-      newStatus = "available";
-  }
-
-  // Update tire status
   await Tire.findByIdAndUpdate(slot.tireId, { status: newStatus });
 
-  // REMOVE SLOT ENTRY 
+  //  OPTIONAL history update
+  const activeTrip = await Trip.findOne({ busId, endTime: null });
+
+  if (activeTrip) {
+    await TireHistory.findOneAndUpdate(
+      {
+        tireId: slot.tireId,
+        busId,
+        tripId: activeTrip._id,
+        slotPosition,
+        endTime: null,
+      },
+      {
+        endTime: new Date(),
+        kmServed,
+        removalReason: reason?.toLowerCase() || null,
+      }
+    );
+  }
+
+  //  Always unmount
   await BusTireSlot.deleteOne({ _id: slot._id });
 
   return { message: "Tire unmounted successfully" };
 };
+
 
 /**
  * GET ALL SLOTS OF BUS
