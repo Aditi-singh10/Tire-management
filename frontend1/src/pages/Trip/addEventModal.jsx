@@ -32,7 +32,7 @@ export default function AddEventModal({ tripId, onClose }) {
     loadData();
   }, [tripId]);
 
-  /* SLOT CHANGE → AUTO SET REMOVED TIRE */
+  /* SLOT CHANGE: AUTO SET REMOVED TIRE */
   useEffect(() => {
     const slot = slots.find((s) => s.slotPosition === slotPosition);
     setRemovedTire(slot?.tireId || null);

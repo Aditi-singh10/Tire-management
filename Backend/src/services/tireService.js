@@ -7,7 +7,6 @@ exports.createTire = async ({ tireCode, maxLifeKm }) => {
 exports.getAllTires = async () => {
   const tires = await Tire.find();
 
-  // 🔥 NORMALIZE DATA FOR FRONTEND
   return tires.map((t) => ({
     _id: t._id,
     tireCode: t.tireCode,

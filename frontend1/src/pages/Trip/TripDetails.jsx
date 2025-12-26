@@ -11,7 +11,6 @@ export default function TripDetails() {
   const { id: tripId } = useParams();
   const [trip, setTrip] = useState(null);
   const [showEvent, setShowEvent] = useState(false);
-  const [ending, setEnding] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
 
   const loadTrip = async () => {

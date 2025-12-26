@@ -55,7 +55,7 @@ exports.unmountTireFromBus = async ({ busId, slotPosition, reason }) => {
   // Update tire status
   await Tire.findByIdAndUpdate(slot.tireId, { status: newStatus });
 
-  // REMOVE SLOT ENTRY (THIS FIXES YOUR BUG)
+  // REMOVE SLOT ENTRY 
   await BusTireSlot.deleteOne({ _id: slot._id });
 
   return { message: "Tire unmounted successfully" };

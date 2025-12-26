@@ -24,7 +24,16 @@ const TripSchema = new mongoose.Schema(
       required: true,
     },
 
-    events: { type: Array, default: [] },
+    events: [
+      {
+        type: { type: String, required: true },
+        slotPosition: String,
+        removedTire: { type: mongoose.Schema.Types.ObjectId, ref: "Tire" },
+        installedTire: { type: mongoose.Schema.Types.ObjectId, ref: "Tire" },
+        distanceAtEvent: Number,
+        time: Date,
+      },
+    ],
   },
   { timestamps: true }
 );
