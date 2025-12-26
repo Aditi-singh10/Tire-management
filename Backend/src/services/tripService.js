@@ -1,8 +1,30 @@
 const Trip = require("../models/tripModel");
 const Tire = require("../models/tireModel");
+const BusTireSlot = require("../models/busTireSlotModel");
+const TireHistory = require("../models/tireHistoryModel");
 
 exports.startTrip = async (data) => {
-  return Trip.create(data);
+  const trip = await Trip.create(data);
+
+  //  Find all currently mounted tires on this bus
+  const mountedSlots = await BusTireSlot.find({ busId: trip.busId });
+
+  //  Attach tripId to active TireHistory records
+  for (const slot of mountedSlots) {
+    await TireHistory.findOneAndUpdate(
+      {
+        tireId: slot.tireId,
+        busId: trip.busId,
+        slotPosition: slot.slotPosition,
+        endTime: null,
+      },
+      {
+        tripId: trip._id,
+      }
+    );
+  }
+
+  return trip;
 };
 
 exports.getTrip = async (id) => {
@@ -34,17 +56,33 @@ exports.endTrip = async (tripId, body) => {
     distance = Number(actualDistance);
   }
 
-  //  HARD SAFETY CHECK
+  // HARD SAFETY CHECK
   if (Number.isNaN(distance)) {
     throw new Error("Distance calculation failed (NaN)");
   }
 
+  //  END TRIP
   trip.endStatus = endStatus;
   trip.endReason = endReason || null;
   trip.endTime = new Date();
   await trip.save();
 
-  //  UPDATE MOUNTED TIRES SAFELY
+  //  CLOSE TIRE HISTORY (THIS IS THE MISSING PART)
+  await TireHistory.updateMany(
+    {
+      busId: trip.busId,
+      tripId: trip._id,
+      endTime: null,
+    },
+    {
+      endTime: new Date(),
+      removalReason:
+        endStatus === "completed" ? "trip_end" : "aborted",
+      kmServed: distance,
+    }
+  );
+
+  //  UPDATE TIRE LIFE (KEEP YOUR EXISTING LOGIC)
   const tires = await Tire.find({ status: "mounted" });
 
   for (const tire of tires) {
@@ -59,4 +97,3 @@ exports.endTrip = async (tripId, body) => {
 
   return trip;
 };
-

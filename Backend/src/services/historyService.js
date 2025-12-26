@@ -6,7 +6,7 @@ const Trip = require("../models/tripModel");
  */
 exports.getBusHistory = async (busId) => {
   return TireHistory.find({ busId })
-    .populate("tireId", "tireCode maxLifeKm") 
+    .populate("tireId", "tireCode maxLifeKm")
     .populate("busId", "busNumber")
     .sort({ startTime: 1 });
 };
@@ -16,11 +16,10 @@ exports.getBusHistory = async (busId) => {
  */
 exports.getTireHistory = async (tireId) => {
   return TireHistory.find({ tireId })
-    .populate("tireId", "tireCode maxLifeKm") 
+    .populate("tireId", "tireCode maxLifeKm")
     .populate("busId", "busNumber")
     .sort({ startTime: 1 });
 };
-
 
 exports.getBusTripHistory = async (busId) => {
   // 1. Get all trips of this bus
@@ -58,9 +57,7 @@ exports.getBusTripHistory = async (busId) => {
 };
 
 exports.getBusTripSummary = async (busId) => {
-  const trips = await Trip.find({ busId })
-    .sort({ startTime: -1 })
-    .lean();
+  const trips = await Trip.find({ busId }).sort({ startTime: -1 }).lean();
 
   const summaries = [];
 
@@ -82,19 +79,33 @@ exports.getBusTripSummary = async (busId) => {
         : trip.actualDistance ?? 0;
 
     //  Build slot → tire mapping
-    const slotMap = tireHistories.map((th) => ({
-      slotPosition: th.slotPosition,
-      tireCode: th.tireId?.tireCode || "—",
-      kmServed: th.kmServed,
-      mountedFrom: th.startTime,
-      mountedTill: th.endTime,
-    }));
+    const slotMap = tireHistories.map((th) => {
+      const mountedTill = th.endTime || new Date();
+
+      const durationHours = Math.round(
+        (mountedTill - new Date(th.startTime)) / (1000 * 60 * 60)
+      );
+
+      return {
+        slotPosition: th.slotPosition,
+        tireCode: th.tireId?.tireCode || "—",
+        kmServed: th.kmServed,
+        mountedFrom: th.startTime,
+        mountedTill: th.endTime,
+        durationHours,
+      };
+    });
+
+    let status = "ongoing";
+    if (trip.endTime) {
+      status = trip.endStatus === "aborted" ? "aborted" : "completed";
+    }
 
     summaries.push({
       tripId: trip._id,
       startTime: trip.startTime,
       endTime: trip.endTime,
-      status: trip.endTime ? trip.endStatus || "completed" : "ongoing",
+      status,
       abortReason: trip.endReason || null,
       distanceTravelled,
       slots: slotMap,

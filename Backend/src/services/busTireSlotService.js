@@ -42,7 +42,7 @@ exports.unmountTireFromBus = async ({ busId, slotPosition, reason, kmServed = 0 
     throw new Error("Slot already empty");
   }
 
-  // Update tire status (KEEP YOUR LOGIC)
+  // Update tire status 
   let newStatus = "available";
   if (reason === "Puncture") newStatus = "repair";
   if (reason === "Wear") newStatus = "scrap";

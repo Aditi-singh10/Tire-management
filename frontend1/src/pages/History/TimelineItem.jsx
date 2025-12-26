@@ -1,138 +1,138 @@
-import { motion } from "framer-motion";
-import {
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-} from "lucide-react";
-import clsx from "clsx";
+// import { motion } from "framer-motion";
+// import {
+//   CheckCircle,
+//   AlertTriangle,
+//   XCircle,
+// } from "lucide-react";
+// import clsx from "clsx";
 
-const iconMap = {
-  puncture: AlertTriangle,
-  trip_end: CheckCircle,
-  expired: XCircle,
-};
+// const iconMap = {
+//   puncture: AlertTriangle,
+//   trip_end: CheckCircle,
+//   expired: XCircle,
+// };
 
-const colorMap = {
-  puncture: "bg-orange-100 text-orange-600",
-  trip_end: "bg-green-100 text-green-600",
-  expired: "bg-red-100 text-red-600",
-};
+// const colorMap = {
+//   puncture: "bg-orange-100 text-orange-600",
+//   trip_end: "bg-green-100 text-green-600",
+//   expired: "bg-red-100 text-red-600",
+// };
 
-export default function TimelineItem({ item, isLast }) {
-  const Icon = iconMap[item.removalReason] || CheckCircle;
+// export default function TimelineItem({ item, isLast }) {
+//   const Icon = iconMap[item.removalReason] || CheckCircle;
 
-  // 🔹 Duration (hours)
-  const durationHours =
-    item.endTime &&
-    Math.round(
-      (new Date(item.endTime) - new Date(item.startTime)) /
-        (1000 * 60 * 60)
-    );
+//   // 🔹 Duration (hours)
+//   const durationHours =
+//     item.endTime &&
+//     Math.round(
+//       (new Date(item.endTime) - new Date(item.startTime)) /
+//         (1000 * 60 * 60)
+//     );
 
-  // 🔹 Usage %
-  const usagePercent =
-    item.tireId?.maxLifeKm
-      ? Math.round(
-          (item.kmServed / item.tireId.maxLifeKm) * 100
-        )
-      : null;
+//   //  Usage %
+//   const usagePercent =
+//     item.tireId?.maxLifeKm
+//       ? Math.round(
+//           (item.kmServed / item.tireId.maxLifeKm) * 100
+//         )
+//       : null;
 
-  return (
-    <div className="flex gap-4">
-      {/* ICON */}
-      <div className="flex flex-col items-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className={clsx(
-            "w-10 h-10 rounded-full flex items-center justify-center",
-            colorMap[item.removalReason]
-          )}
-        >
-          <Icon size={20} />
-        </motion.div>
+//   return (
+//     <div className="flex gap-4">
+//       {/* ICON */}
+//       <div className="flex flex-col items-center">
+//         <motion.div
+//           initial={{ scale: 0 }}
+//           animate={{ scale: 1 }}
+//           className={clsx(
+//             "w-10 h-10 rounded-full flex items-center justify-center",
+//             colorMap[item.removalReason]
+//           )}
+//         >
+//           <Icon size={20} />
+//         </motion.div>
 
-        {!isLast && (
-          <div className="w-px h-full bg-slate-300 mt-2" />
-        )}
-      </div>
+//         {!isLast && (
+//           <div className="w-px h-full bg-slate-300 mt-2" />
+//         )}
+//       </div>
 
-      {/* CONTENT */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="pb-8"
-      >
-        {/* Reason */}
-        <p className="font-semibold">
-          {item.removalReason === "trip_end"
-            ? "TRIP COMPLETED"
-            : item.removalReason?.replace("_", " ").toUpperCase()}
-        </p>
+//       {/* CONTENT */}
+//       <motion.div
+//         initial={{ opacity: 0, x: 20 }}
+//         animate={{ opacity: 1, x: 0 }}
+//         className="pb-8"
+//       >
+//         {/* Reason */}
+//         <p className="font-semibold">
+//           {item.removalReason === "trip_end"
+//             ? "TRIP COMPLETED"
+//             : item.removalReason?.replace("_", " ").toUpperCase()}
+//         </p>
 
-        {/* Bus */}
-        {item.busId?.busNumber && (
-          <p className="text-sm text-slate-700">
-            Bus: <b>{item.busId.busNumber}</b>
-          </p>
-        )}
+//         {/* Bus */}
+//         {item.busId?.busNumber && (
+//           <p className="text-sm text-slate-700">
+//             Bus: <b>{item.busId.busNumber}</b>
+//           </p>
+//         )}
 
-        {/* Slot */}
-        {item.slotPosition && (
-          <p className="text-sm text-slate-700">
-            Slot: <b>{item.slotPosition}</b>
-          </p>
-        )}
+//         {/* Slot */}
+//         {item.slotPosition && (
+//           <p className="text-sm text-slate-700">
+//             Slot: <b>{item.slotPosition}</b>
+//           </p>
+//         )}
 
-        {/* Tire */}
-        {item.tireId?.tireCode && (
-          <p className="text-sm text-slate-700">
-            Tire: <b>{item.tireId.tireCode}</b>
-          </p>
-        )}
+//         {/* Tire */}
+//         {item.tireId?.tireCode && (
+//           <p className="text-sm text-slate-700">
+//             Tire: <b>{item.tireId.tireCode}</b>
+//           </p>
+//         )}
 
-        {/* KM */}
-        <p className="text-sm text-slate-600">
-          Distance: {item.kmServed} km
-        </p>
+//         {/* KM */}
+//         <p className="text-sm text-slate-600">
+//           Distance: {item.kmServed} km
+//         </p>
 
-        {/* Usage */}
-        {item.tireId?.maxLifeKm ? (
-          <p className="text-sm text-slate-600">
-            Usage:{" "}
-            {Math.round(
-              (item.kmServed / item.tireId.maxLifeKm) * 100
-            )}
-            %
-          </p>
-        ) : (
-          <p className="text-sm text-slate-400 italic">
-            Usage: N/A
-          </p>
-        )}
+//         {/* Usage */}
+//         {item.tireId?.maxLifeKm ? (
+//           <p className="text-sm text-slate-600">
+//             Usage:{" "}
+//             {Math.round(
+//               (item.kmServed / item.tireId.maxLifeKm) * 100
+//             )}
+//             %
+//           </p>
+//         ) : (
+//           <p className="text-sm text-slate-400 italic">
+//             Usage: N/A
+//           </p>
+//         )}
 
-        {/* Duration */}
-        {durationHours && (
-          <p className="text-sm text-slate-600">
-            Duration: {durationHours} hrs
-          </p>
-        )}
+//         {/* Duration */}
+//         {durationHours && (
+//           <p className="text-sm text-slate-600">
+//             Duration: {durationHours} hrs
+//           </p>
+//         )}
 
-        {/* Active Status */}
-        {!item.endTime && (
-          <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
-            Currently Mounted
-          </span>
-        )}
+//         {/* Active Status */}
+//         {!item.endTime && (
+//           <span className="inline-block mt-1 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+//             Currently Mounted
+//           </span>
+//         )}
 
-        {/* Time */}
-        <p className="text-xs text-slate-400 mt-1">
-          {new Date(item.startTime).toLocaleString()} →{" "}
-          {item.endTime
-            ? new Date(item.endTime).toLocaleString()
-            : "Active"}
-        </p>
-      </motion.div>
-    </div>
-  );
-}
+//         {/* Time */}
+//         <p className="text-xs text-slate-400 mt-1">
+//           {new Date(item.startTime).toLocaleString()} →{" "}
+//           {item.endTime
+//             ? new Date(item.endTime).toLocaleString()
+//             : "Active"}
+//         </p>
+//       </motion.div>
+//     </div>
+//   );
+// }
