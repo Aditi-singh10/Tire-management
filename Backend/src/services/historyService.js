@@ -15,11 +15,26 @@ exports.getBusHistory = async (busId) => {
  * Get history of a tire
  */
 exports.getTireHistory = async (tireId) => {
-  return TireHistory.find({ tireId })
-    .populate("tireId", "tireCode maxLifeKm")
+  const history = await TireHistory.find({ tireId })
     .populate("busId", "busNumber")
-    .sort({ startTime: 1 });
+    .populate("tireId", "tireCode maxLifeKm")
+    .sort({ startTime: -1 });
+
+  const active = history.find(h => !h.endTime) || null;
+
+  return {
+    current: active
+      ? {
+          busId: active.busId?._id,
+          busNumber: active.busId?.busNumber,
+          slotPosition: active.slotPosition,
+          startTime: active.startTime,
+        }
+      : null,
+    history,
+  };
 };
+
 
 exports.getBusTripHistory = async (busId) => {
   // 1. Get all trips of this bus

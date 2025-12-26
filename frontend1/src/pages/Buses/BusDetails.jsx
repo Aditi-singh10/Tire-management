@@ -58,7 +58,7 @@ export default function BusDetails() {
         onClick={() => navigate(`/history/bus-summary/${bus._id}`)}
         className="mb-6 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700"
       >
-        View Tire History
+        View Bus History
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -9,7 +9,7 @@ import StartTrip from "../pages/Trip/StartTrip";
 import TripDetails from "../pages/Trip/TripDetails";
 
 import HistoryHome from "../pages/History/HistoryHome";
-// import TireHistory from "../pages/History/TireHistory";
+import TireHistory from "../pages/History/TireHistory";
 import BusHistory from "../pages/History/BusHistory";
 // import BusTireHistory from "../pages/History/BusTireHistory";
 import { all } from "axios";
@@ -29,7 +29,7 @@ export default function AppRoutes() {
           <Route path="/trips/:id" element={<TripDetails />} />
 
           <Route path="/history" element={<HistoryHome />} />
-          {/* <Route path="/history/tire/:id" element={<TireHistory />} /> */}
+          <Route path="/history/tire/:id" element={<TireHistory />} />
           <Route path="/history/bus-summary/:busId" element={<BusHistory />} />
         </Routes>
       </PageWrapper>

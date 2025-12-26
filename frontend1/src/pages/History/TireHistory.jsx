@@ -1,32 +1,58 @@
-// import { useEffect, useState } from "react";
-// import { useParams } from "react-router-dom";
-// import { motion } from "framer-motion";
-// import { getTireHistory } from "../../api/historyApi";
-// import TimelineItem from "./TimelineItem";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getTireHistory } from "../../api/historyApi";
+import TimelineItem from "./TimelineItem";
 
-// export default function TireHistory() {
-//   const { id } = useParams();
-//   const [history, setHistory] = useState([]);
+export default function TireHistory() {
+  const { id } = useParams();
+  const [data, setData] = useState(null);
 
-//   useEffect(() => {
-//     getTireHistory(id).then((res) => setHistory(res.data));
-//   }, [id]);
+  useEffect(() => {
+    getTireHistory(id).then(res => setData(res.data));
+  }, [id]);
 
-//   return (
-//     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-//       <h2 className="text-2xl font-bold mb-6">
-//         Tire History Timeline
-//       </h2>
+  if (!data) return null;
 
-//       <div className="bg-white rounded-xl p-6 shadow">
-//         {history.map((item, idx) => (
-//           <TimelineItem
-//             key={item._id}
-//             item={item}
-//             isLast={idx === history.length - 1}
-//           />
-//         ))}
-//       </div>
-//     </motion.div>
-//   );
-// }
+  const { current, history } = data;
+
+  return (
+    <div>
+      {/*  CURRENT STATUS */}
+      <div className="bg-blue-50 p-4 rounded-xl mb-6">
+        <h2 className="font-bold text-xl">
+          Tire History
+        </h2>
+
+        {current ? (
+          <>
+            <p>
+              Currently mounted on <b>{current.busNumber}</b>
+            </p>
+            <p>
+              Slot: <b>{current.slotPosition}</b>
+            </p>
+            <p>
+              Mounted since:{" "}
+              {new Date(current.startTime).toLocaleString()}
+            </p>
+          </>
+        ) : (
+          <p className="italic text-slate-500">
+            Not mounted on any bus
+          </p>
+        )}
+      </div>
+
+      {/*  HISTORY TIMELINE */}
+      <div className="bg-white p-4 rounded-xl">
+        {history.map((item, idx) => (
+          <TimelineItem
+            key={item._id}
+            item={item}
+            isLast={idx === history.length - 1}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

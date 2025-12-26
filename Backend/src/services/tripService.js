@@ -97,3 +97,49 @@ exports.endTrip = async (tripId, body) => {
 
   return trip;
 };
+
+exports.addTripEvent = async (tripId, data) => {
+  const {
+    type,
+    slotPosition,
+    removedTireId,
+    installedTireId,
+    distanceAtEvent,
+  } = data;
+
+  if (
+    !type ||
+    !slotPosition ||
+    !removedTireId ||
+    !installedTireId ||
+    distanceAtEvent === undefined
+  ) {
+    throw new Error("Missing required event data");
+  }
+
+  const trip = await Trip.findById(tripId);
+  if (!trip) throw new Error("Trip not found");
+
+  /*  PUSH EVENT INTO TRIP */
+  trip.events.push({
+    type,
+    slotPosition,
+    removedTire: removedTireId,
+    installedTire: installedTireId,
+    distanceAtEvent,
+    time: new Date(),
+  });
+
+  await trip.save();
+
+  /*  UPDATE TIRE STATUS */
+  await Tire.findByIdAndUpdate(removedTireId, {
+    status: type === "puncture" ? "damaged" : "expired",
+  });
+
+  await Tire.findByIdAndUpdate(installedTireId, {
+    status: "mounted",
+  });
+
+  return trip;
+};
