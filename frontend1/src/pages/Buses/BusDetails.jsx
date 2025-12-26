@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getBusById, getBusTireSlots } from "../../api/busApi";
 import MountTireModal from "./MountTire";
@@ -7,6 +7,7 @@ import UnmountTireModal from "./UnmountTireModal";
 
 export default function BusDetails() {
   const { id } = useParams();
+  const navigate = useNavigate(); 
   const [bus, setBus] = useState(null);
   const [dbSlots, setDbSlots] = useState([]);
   const [activeSlot, setActiveSlot] = useState(null);
@@ -29,21 +30,18 @@ export default function BusDetails() {
   if (!bus) return null;
 
   // 🔑 CREATE VIRTUAL SLOTS
-  const allSlots = Array.from(
-    { length: bus.totalSlots },
-    (_, i) => {
-      const slotPosition = `slot-${i + 1}`;
-      const mountedSlot = dbSlots.find(
-        (s) => s.slotPosition === slotPosition
-      );
+  const allSlots = Array.from({ length: bus.totalSlots }, (_, i) => {
+    const slotPosition = `slot-${i + 1}`;
+    const mountedSlot = dbSlots.find(
+      (s) => s.slotPosition === slotPosition
+    );
 
-      return {
-        slotPosition,
-        mounted: !!mountedSlot,
-        data: mountedSlot || null,
-      };
-    }
-  );
+    return {
+      slotPosition,
+      mounted: !!mountedSlot,
+      data: mountedSlot || null,
+    };
+  });
 
   return (
     <motion.div
@@ -51,9 +49,17 @@ export default function BusDetails() {
       animate={{ opacity: 1 }}
       className="max-w-6xl mx-auto p-6"
     >
-      <h2 className="text-3xl font-bold mb-6">
+      <h2 className="text-3xl font-bold mb-2">
         🚍 Bus {bus.busNumber}
       </h2>
+
+      {/* ✅ HISTORY BUTTON */}
+      <button
+        onClick={() => navigate(`/history/bus/${bus._id}`)}
+        className="mb-6 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700"
+      >
+        View Tire History
+      </button>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {allSlots.map((slot) => (
@@ -62,12 +68,8 @@ export default function BusDetails() {
             whileHover={{ scale: 1.03 }}
             className="bg-white p-4 rounded-xl shadow border"
           >
-            <p className="text-xs text-slate-500">
-              Slot
-            </p>
-            <p className="font-semibold">
-              {slot.slotPosition}
-            </p>
+            <p className="text-xs text-slate-500">Slot</p>
+            <p className="font-semibold">{slot.slotPosition}</p>
 
             <p className="mt-2 text-sm">
               Tire:{" "}
@@ -76,9 +78,7 @@ export default function BusDetails() {
                   {slot.data.tireId.tireCode}
                 </span>
               ) : (
-                <span className="text-green-600">
-                  Empty
-                </span>
+                <span className="text-green-600">Empty</span>
               )}
             </p>
 
@@ -129,6 +129,7 @@ export default function BusDetails() {
       {mode === "unmount" && activeSlot && (
         <UnmountTireModal
           slot={activeSlot}
+          busId={bus._id}
           onClose={() => {
             setMode(null);
             setActiveSlot(null);

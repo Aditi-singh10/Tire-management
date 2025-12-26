@@ -14,6 +14,13 @@ const TireHistorySchema = new mongoose.Schema(
       required: true,
     },
 
+    // ✅ NEW (OPTIONAL) – TRIP LINK
+    tripId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Trip",
+      default: null,
+    },
+
     slotPosition: {
       type: String,
       required: true,
@@ -21,7 +28,7 @@ const TireHistorySchema = new mongoose.Schema(
 
     kmServed: {
       type: Number,
-      default: 0, //not required at start
+      default: 0,
     },
 
     startTime: {
@@ -31,13 +38,13 @@ const TireHistorySchema = new mongoose.Schema(
 
     endTime: {
       type: Date,
-      default: null, //filled later
+      default: null,
     },
 
     removalReason: {
       type: String,
       enum: ["trip_end", "puncture", "expired", "repair"],
-      default: null, // filled later
+      default: null,
     },
   },
   { timestamps: true }

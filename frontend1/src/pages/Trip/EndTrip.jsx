@@ -11,20 +11,18 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
   const handleEnd = async () => {
     if (!endType) return;
 
-    // validation for "other"
-    if (endType === "other") {
-      if (!distance || Number(distance) <= 0) return;
-      if (!reason.trim()) return;
-    }
+    let payload;
 
-    const payload =
-      endType === "completed"
-        ? { endType: "completed" }
-        : {
-            endType: "other",
-            actualDistance: Number(distance),
-            reason,
-          };
+    if (endType === "completed") {
+      payload = { endType: "completed" };
+    } else {
+      if (!distance || Number(distance) <= 0) return;
+      payload = {
+        endType: "aborted", // ✅ FIXED
+        actualDistance: Number(distance),
+        reason,
+      };
+    }
 
     setLoading(true);
     try {
@@ -44,7 +42,6 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
       >
         <h3 className="font-bold mb-4">End Trip</h3>
 
-        {/* End Type */}
         <select
           className="w-full border p-2 mb-3 rounded"
           value={endType}
@@ -52,11 +49,10 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
         >
           <option value="">Select End Type</option>
           <option value="completed">Completed</option>
-          <option value="other">Other (Interrupted)</option>
+          <option value="aborted">Other (Interrupted)</option>
         </select>
 
-        {/* If OTHER → show extra fields */}
-        {endType === "other" && (
+        {endType === "aborted" && (
           <>
             <input
               type="number"

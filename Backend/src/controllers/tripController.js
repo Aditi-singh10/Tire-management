@@ -2,19 +2,9 @@ const tripService = require("../services/tripService");
 
 exports.startTrip = async (req, res) => {
   try {
-    const trip = await tripService.startTrip(req.body);
-    res.status(201).json(trip);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
-
-exports.addTripEvent = async (req, res) => {
-  try {
-    const trip = await tripService.addEvent(req.params.tripId, req.body);
-    res.json(trip);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(201).json(await tripService.startTrip(req.body));
+  } catch (e) {
+    res.status(400).json({ message: e.message });
   }
 };
 
@@ -22,29 +12,18 @@ exports.endTrip = async (req, res) => {
   try {
     const result = await tripService.endTrip(
       req.params.tripId,
-      req.body // { status, reason }
+      req.body
     );
-
     res.json(result);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+  } catch (e) {
+    res.status(400).json({ message: e.message });
   }
 };
 
 exports.getTrip = async (req, res) => {
-  try {
-    const trip = await tripService.getTrip(req.params.tripId);
-    res.json(trip);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+  res.json(await tripService.getTrip(req.params.tripId));
 };
 
 exports.getAllTrips = async (req, res) => {
-  try {
-    const trips = await tripService.getAllTrips();
-    res.json(trips);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  res.json(await tripService.getAllTrips());
 };

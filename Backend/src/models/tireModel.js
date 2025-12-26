@@ -3,15 +3,10 @@ const mongoose = require("mongoose");
 const TireSchema = new mongoose.Schema(
   {
     tireCode: {
-      type: String, // A01, A07, A01-R1
+      type: String,
       required: true,
       unique: true,
       trim: true,
-    },
-
-    originalTireCode: {
-      type: String,
-      default: null, // filled only if repaired tire
     },
 
     maxLifeKm: {

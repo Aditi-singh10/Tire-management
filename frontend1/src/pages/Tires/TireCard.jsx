@@ -1,86 +1,38 @@
-import { motion } from "framer-motion";
-import { Wrench, PlugZap } from "lucide-react";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 
-const statusColor = {
-  available: "bg-green-100 text-green-700",
-  mounted: "bg-blue-100 text-blue-700",
-  punctured: "bg-red-100 text-red-700",
-  expired: "bg-orange-100 text-orange-700",
-  repaired: "bg-purple-100 text-purple-700",
-};
+export default function TireCard({ tire }) {
+  const tireCode = tire?.tireCode ?? "N/A";
+  const kmUsed = tire?.kmUsed ?? 0;
+  const maxKm = tire?.maxKm ?? 0;
+  const status = tire?.status ?? "unknown";
 
-export default function TireCard({
-  tire,
-  onRepair,
-  onMount,
-}) {
-  const lifePercent = Math.min(
-    (tire.currentLifeKm / tire.maxLifeKm) * 100,
-    100
-  );
+  const usage =
+    maxKm > 0 ? Math.min((kmUsed / maxKm) * 100, 100) : 0;
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.04 }}
-      className="bg-white rounded-2xl shadow p-6 flex flex-col justify-between"
-    >
-      <div>
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-bold">
-            {tire.tireCode}
-          </h3>
-          <span
-            className={clsx(
-              "text-xs px-3 py-1 rounded-full font-semibold",
-              statusColor[tire.status]
-            )}
-          >
-            {tire.status.toUpperCase()}
-          </span>
-        </div>
-
-        <p className="text-sm text-slate-500 mt-2">
-          Life: {tire.currentLifeKm} / {tire.maxLifeKm} km
-        </p>
-
-        <div className="mt-4">
-          <div className="flex justify-between text-xs mb-1">
-            <span>Usage</span>
-            <span>{Math.round(lifePercent)}%</span>
-          </div>
-
-          <div className="w-full bg-slate-200 h-2 rounded-full">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${lifePercent}%` }}
-              className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600"
-            />
-          </div>
-        </div>
+    <motion.div className="bg-white rounded-xl shadow p-5">
+      <div className="flex justify-between mb-2">
+        <h3 className="font-bold">{tireCode}</h3>
+        <span className="text-xs px-2 py-1 rounded bg-gray-100">
+          {status.toUpperCase()}
+        </span>
       </div>
 
-      {/* Actions */}
-      <div className="mt-5 flex gap-2">
-        {tire.status === "expired" && (
-          <button
-            onClick={onRepair}
-            className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white py-2 rounded-lg"
-          >
-            <Wrench size={16} />
-            Repair
-          </button>
-        )}
+      <p>Used: {kmUsed} km</p>
+      <p>Max: {maxKm} km</p>
+      <p>Usage: {usage.toFixed(1)}%</p>
 
-        {tire.status === "available" && (
-          <button
-            onClick={onMount}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded-lg"
-          >
-            <PlugZap size={16} />
-            Mount
-          </button>
-        )}
+      <div className="mt-2 bg-gray-200 h-2 rounded">
+        <div
+          className={clsx(
+            "h-2 rounded",
+            usage < 70 && "bg-green-500",
+            usage >= 70 && usage < 90 && "bg-orange-500",
+            usage >= 90 && "bg-red-500"
+          )}
+          style={{ width: `${usage}%` }}
+        />
       </div>
     </motion.div>
   );

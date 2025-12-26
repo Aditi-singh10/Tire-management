@@ -1,41 +1,5 @@
 const mongoose = require("mongoose");
 
-const TripEventSchema = new mongoose.Schema(
-  {
-    type: {
-      type: String,
-      enum: ["puncture", "replacement", "expired"],
-      required: true,
-    },
-
-    slotPosition: {
-      type: String,
-      required: true,
-    },
-
-    removedTireId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Tire",
-    },
-
-    installedTireId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Tire",
-    },
-
-    distanceAtEvent: {
-      type: Number,
-      required: true,
-    },
-
-    eventTime: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  { _id: false }
-);
-
 const TripSchema = new mongoose.Schema(
   {
     busId: {
@@ -44,16 +8,8 @@ const TripSchema = new mongoose.Schema(
       required: true,
     },
 
-    startTime: {
-      type: Date,
-      required: true,
-      default: Date.now,
-    },
-
-    endTime: {
-      type: Date,
-      default: null,
-    },
+    startTime: { type: Date, default: Date.now },
+    endTime: { type: Date, default: null },
 
     endStatus: {
       type: String,
@@ -61,17 +17,14 @@ const TripSchema = new mongoose.Schema(
       default: null,
     },
 
-    endReason: {
-      type: String,
-      default: null, // user-entered reason
-    },
+    endReason: { type: String, default: null },
 
     totalDistance: {
       type: Number,
       required: true,
     },
 
-    events: [TripEventSchema],
+    events: { type: Array, default: [] },
   },
   { timestamps: true }
 );

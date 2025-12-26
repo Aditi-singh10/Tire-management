@@ -1,26 +1,21 @@
 const TireHistory = require("../models/tireHistoryModel");
-const Tire = require("../models/tireModel");
-const {
-  calculateTireLifecycle,
-} = require("../utils/lifecycleCalculator");
 
-exports.getTireHistory = async (tireId) => {
-  return await TireHistory.find({ tireId }).sort({ startTime: 1 });
-};
-
+/**
+ * Get history of a bus
+ */
 exports.getBusHistory = async (busId) => {
-  return await TireHistory.find({ busId }).sort({ startTime: 1 });
+  return TireHistory.find({ busId })
+    .populate("tireId", "tireCode maxLifeKm") 
+    .populate("busId", "busNumber")
+    .sort({ startTime: 1 });
 };
 
 /**
- * Get computed lifecycle snapshot
+ * Get history of a tire
  */
-exports.getTireLifecycleSnapshot = async (tireId) => {
-  const tire = await Tire.findById(tireId);
-  if (!tire) throw new Error("Tire not found");
-
-  return calculateTireLifecycle({
-    trips: [{ distance: tire.totalDistanceUsed }],
-    maxLifecycleDistance: tire.maxLifeKm,
-  });
+exports.getTireHistory = async (tireId) => {
+  return TireHistory.find({ tireId })
+    .populate("tireId", "tireCode maxLifeKm") 
+    .populate("busId", "busNumber")
+    .sort({ startTime: 1 });
 };

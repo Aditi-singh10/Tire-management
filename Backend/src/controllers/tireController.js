@@ -4,8 +4,8 @@ exports.createTire = async (req, res) => {
   try {
     const tire = await tireService.createTire(req.body);
     res.status(201).json(tire);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+  } catch (e) {
+    res.status(400).json({ message: e.message });
   }
 };
 
@@ -18,10 +18,5 @@ exports.getTireById = async (req, res) => {
 };
 
 exports.repairTire = async (req, res) => {
-  try {
-    const repairedTire = await tireService.repairTire(req.params.id, req.body);
-    res.json(repairedTire);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+  res.json(await tireService.repairTire(req.params.id));
 };

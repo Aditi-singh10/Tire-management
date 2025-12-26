@@ -1,21 +1,36 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 export default function UnmountTireModal({
   slot,
+  busId,         
   onClose,
   onDone,
 }) {
   const [reason, setReason] = useState("");
 
   const handleUnmount = async () => {
-    // call backend unmount service here
-    console.log("Unmounting:", {
-      slotId: slot._id,
-      tireId: slot.tireId._id,
-      reason,
-    });
-    onDone();
+    try {
+      console.log("Unmounting:", {
+        busId,
+        slotPosition: slot.slotPosition,
+        reason,
+      });
+
+      await axios.post(
+        "http://localhost:5000/api/bus-tire-slots/unmount",
+        {
+          busId: busId,                    
+          slotPosition: slot.slotPosition, 
+          reason: reason,                  
+        }
+      );
+
+      onDone(); // reload data
+    } catch (err) {
+      console.error("Unmount failed:", err);
+    }
   };
 
   return (
@@ -31,19 +46,21 @@ export default function UnmountTireModal({
 
         <select
           className="w-full border p-3 mb-4"
+          value={reason}
           onChange={(e) => setReason(e.target.value)}
         >
           <option value="">Select Reason</option>
-          <option value="puncture">Puncture</option>
-          <option value="wear">Wear</option>
-          <option value="replacement">Replacement</option>
-          <option value="maintenance">Maintenance</option>
+          <option value="Puncture">Puncture</option>
+          <option value="Wear">Wear</option>
+          <option value="Replacement">Replacement</option>
+          <option value="Maintenance">Maintenance</option>
         </select>
 
         <div className="flex justify-end gap-2">
           <button onClick={onClose}>Cancel</button>
           <button
             onClick={handleUnmount}
+            disabled={!reason}
             className="bg-red-600 text-white px-4 py-2 rounded-lg"
           >
             Unmount
