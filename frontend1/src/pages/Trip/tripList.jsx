@@ -35,10 +35,21 @@ export default function TripList() {
             <p className="font-semibold">Bus: {trip.busId?.busNumber || "—"}</p>
 
             <p className="text-sm text-slate-500">
-              Distance: {trip.totalDistance} km
+              Distance:{" "}
+              {trip.endStatus === "aborted"
+                ? trip.actualDistance
+                : trip.totalDistance}{" "}
+              km
             </p>
+
             <p className="text-xs mt-2">
-              {trip.endTime ? "Completed" : "Ongoing"}
+              {trip.endStatus === "aborted" ? (
+                <span className="text-red-600 font-semibold">Aborted</span>
+              ) : trip.endStatus === "completed" ? (
+                <span className="text-green-600 font-semibold">Completed</span>
+              ) : (
+                <span className="text-orange-600 font-semibold">Ongoing</span>
+              )}
             </p>
           </div>
         ))}

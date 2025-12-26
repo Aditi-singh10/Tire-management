@@ -26,11 +26,14 @@ exports.endTrip = async (tripId, body) => {
 
   if (endStatus === "completed") {
     distance = Number(trip.totalDistance || 0);
+    trip.actualDistance = trip.totalDistance;
   } else if (endStatus === "aborted") {
     if (actualDistance === undefined || actualDistance === null) {
       throw new Error("Actual distance required for aborted trip");
     }
+
     distance = Number(actualDistance);
+    trip.actualDistance = distance;
   }
 
   //  HARD SAFETY CHECK
@@ -65,7 +68,7 @@ exports.addTripEvent = async (tripId, data) => {
     slotPosition,
     removedTireId,
     installedTireId,
-    distanceAtEvent
+    distanceAtEvent,
   } = data;
 
   if (
@@ -88,18 +91,18 @@ exports.addTripEvent = async (tripId, data) => {
     removedTire: removedTireId,
     installedTire: installedTireId,
     distanceAtEvent,
-    time: new Date()
+    time: new Date(),
   });
 
   await trip.save();
 
   /*  UPDATE TIRE STATUS */
   await Tire.findByIdAndUpdate(removedTireId, {
-    status: type === "puncture" ? "damaged" : "expired"
+    status: type === "puncture" ? "damaged" : "expired",
   });
 
   await Tire.findByIdAndUpdate(installedTireId, {
-    status: "mounted"
+    status: "mounted",
   });
 
   return trip;

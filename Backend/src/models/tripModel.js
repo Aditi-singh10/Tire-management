@@ -24,6 +24,11 @@ const TripSchema = new mongoose.Schema(
       required: true,
     },
 
+    actualDistance: {
+      type: Number,
+      default: null,
+    },
+
     events: [
       {
         type: { type: String, required: true },
