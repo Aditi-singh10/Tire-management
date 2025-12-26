@@ -9,7 +9,6 @@ import {
 import { NavLink } from "react-router-dom";
 
 const menu = [
-  { name: "Dashboard", icon: LayoutDashboard, path: "/" },
   { name: "Buses", icon: Bus, path: "/buses" },
   { name: "Tires", icon: Disc3, path: "/tires" },
   { name: "Trips", icon: Route, path: "/trips" },

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PageWrapper from "../components/layout/PageWrapper";
 
-import Dashboard from "../pages/Dashboard/Dashboard";
+
 import BusList from "../pages/Buses/BusList";
 import BusDetails from "../pages/Buses/BusDetails";
 import TireList from "../pages/Tires/TireList";
@@ -18,7 +18,6 @@ export default function AppRoutes() {
     <BrowserRouter>
       <PageWrapper>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
 
           <Route path="/buses" element={<BusList />} />
           <Route path="/buses/:id" element={<BusDetails />} />
