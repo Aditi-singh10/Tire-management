@@ -9,11 +9,18 @@ export default function RepairTireModal({
 }) {
   const [newCode, setNewCode] = useState("");
   const [maxLifeKm, setMaxLifeKm] = useState("");
+  const trimmedCode = newCode.trim();
+  const parsedMaxLifeKm = Number(maxLifeKm);
+  const canSubmit =
+    trimmedCode.length > 0 &&
+    Number.isFinite(parsedMaxLifeKm) &&
+    parsedMaxLifeKm > 0;
 
   const handleRepair = async () => {
+     if (!canSubmit) return;
     await repairTire(tire._id, {
-      newTireCode: newCode,
-      maxLifeKm: Number(maxLifeKm),
+      newTireCode: trimmedCode,
+      maxLifeKm: parsedMaxLifeKm,
     });
     onRepaired();
   };
@@ -53,7 +60,8 @@ export default function RepairTireModal({
           </button>
           <button
             onClick={handleRepair}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-blue-600 text-white px-4 py-2 rounded disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!canSubmit}
           >
             Repair
           </button>

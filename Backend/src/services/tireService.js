@@ -61,18 +61,32 @@ exports.getTireById = async (id) => {
 /**
  * REPAIR TIRE
  */
-exports.repairTire = async (id) => {
+exports.repairTire = async (id, { newTireCode, maxLifeKm }) => {
   const tire = await Tire.findById(id);
   if (!tire) throw new Error("Tire not found");
 
-  if (tire.currentLifeKm >= tire.maxLifeKm) {
-    throw new Error("Expired tire cannot be repaired");
+  const trimmedCode =
+    typeof newTireCode === "string" ? newTireCode.trim() : "";
+  const parsedMaxLifeKm = Number(maxLifeKm);
+
+  if (!trimmedCode) {
+    throw new Error("New tire code is required");
   }
 
-  if (tire.status !== "punctured") {
-    throw new Error("Only punctured tires can be repaired");
+  if (!Number.isFinite(parsedMaxLifeKm) || parsedMaxLifeKm <= 0) {
+    throw new Error("Max life km must be a positive number");
   }
 
+  const isExpired = tire.currentLifeKm >= tire.maxLifeKm;
+  const isPunctured = tire.status === "punctured";
+
+  if (!isExpired && !isPunctured) {
+    throw new Error("Only punctured or expired tires can be repaired");
+  }
+
+  tire.tireCode = trimmedCode;
+  tire.maxLifeKm = parsedMaxLifeKm;
+  tire.currentLifeKm = 0;
   tire.status = "repaired";
   await tire.save();
 

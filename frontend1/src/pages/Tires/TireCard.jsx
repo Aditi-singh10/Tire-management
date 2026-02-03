@@ -2,25 +2,42 @@ import clsx from "clsx";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-export default function TireCard({ tire }) {
+export default function TireCard({ tire, onRepair }) {
   const navigate = useNavigate();
   const tireCode = tire?.tireCode ?? "N/A";
   const kmUsed = tire?.kmUsed ?? 0;
   const maxKm = tire?.maxKm ?? 0;
   const status = tire?.status ?? "unknown";
+  const canRepair = status === "expired";
 
   const usage =
     maxKm > 0 ? Math.min((kmUsed / maxKm) * 100, 100) : 0;
 
   return (
-    <motion.div  onClick={() => navigate(`/history/tire/${tire._id}`)}
-    className="bg-white rounded-xl shadow p-5">
+    <motion.div
+      onClick={() => navigate(`/history/tire/${tire._id}`)}
+      className="bg-white rounded-xl shadow p-5"
+    >
       
       <div className="flex justify-between mb-2">
         <h3 className="font-bold">{tireCode}</h3>
-        <span className="text-xs px-2 py-1 rounded bg-gray-100">
-          {status.toUpperCase()}
-        </span>
+        <div className="flex items-center gap-2">
+          {canRepair && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onRepair?.(tire);
+              }}
+              className="text-xs px-2 py-1 rounded bg-blue-600 text-white"
+            >
+              Repair
+            </button>
+          )}
+          <span className="text-xs px-2 py-1 rounded bg-gray-100">
+            {status.toUpperCase()}
+          </span>
+        </div>
       </div>
 
       <p>Used: {kmUsed} km</p>

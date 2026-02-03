@@ -18,7 +18,11 @@ exports.getTireById = async (req, res) => {
 };
 
 exports.repairTire = async (req, res) => {
-  res.json(await tireService.repairTire(req.params.id));
+  try {
+    res.json(await tireService.repairTire(req.params.id, req.body));
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
 };
 
 exports.checkTireUsability = async (req, res) => {
