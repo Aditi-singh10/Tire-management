@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const busTireSlotRoute = require("./routes/busTireSlotRoute");
+const busEmergencyTireRoute = require("./routes/busEmergencyTireRoutes");
 
 const app = express();
 
@@ -24,5 +25,6 @@ app.use("/api/tires", require("./routes/tireRoute"));
 app.use("/api/trips", require("./routes/tripRoute"));
 app.use("/api/history", require("./routes/historyRoute"));
 app.use("/api/bus-tire-slots", busTireSlotRoute);
+app.use("/api/bus-emergency-tires", busEmergencyTireRoute);
 
 module.exports = app;
