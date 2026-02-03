@@ -5,20 +5,35 @@ import { createBus } from "../../api/busApi";
 export default function AddBusModal({ onClose, onCreated }) {
   const [busNumber, setBusNumber] = useState("");
   const [totalSlots, setTotalSlots] = useState(6);
+  const [emergencyTireCount, setEmergencyTireCount] = useState(0);
   const [status, setStatus] = useState("active");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleCreate = async () => {
+    setError("");
+
     if (!busNumber || !totalSlots) {
       setError("Bus number and total slots are required");
       return;
     }
 
+    if (emergencyTireCount < 0) {
+      setError("Emergency tire count cannot be negative");
+      return;
+    }
+
     try {
       setLoading(true);
-      await createBus({ busNumber, totalSlots, status });
+      await createBus({
+        busNumber,
+        totalSlots,
+        emergencyTireCount,
+        status,
+      });
+
       onCreated();
+      onClose();
     } catch (err) {
       setError(err?.response?.data?.message || "Failed to create bus");
     } finally {
@@ -35,49 +50,66 @@ export default function AddBusModal({ onClose, onCreated }) {
       >
         <h3 className="text-xl font-bold mb-4">➕ Add Bus</h3>
 
+        {/* Bus Number */}
         <div className="mb-3">
-      <label className="block text-sm font-medium text-slate-700 mb-1">
-        Bus Number
-      </label>
-      <input
-        className="w-full border p-3 rounded-lg"
-        placeholder="Enter bus number"
-        value={busNumber}
-        onChange={(e) => setBusNumber(e.target.value)}
-      />
-    </div>
-
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Bus Number
+          </label>
+          <input
+            className="w-full border p-3 rounded-lg"
+            value={busNumber}
+            onChange={(e) => setBusNumber(e.target.value)}
+          />
+        </div>
 
         {/* Total Slots */}
-    <div className="mb-3">
-      <label className="block text-sm font-medium text-slate-700 mb-1">
-        Total Slots
-      </label>
-      <input
-        type="number"
-        min={1}
-        className="w-full border p-3 rounded-lg"
-        placeholder="Enter total slots"
-        value={totalSlots}
-        onChange={(e) => setTotalSlots(e.target.value)}
-      />
-    </div>
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Total Slots
+          </label>
+          <input
+            type="number"
+            min={1}
+            className="w-full border p-3 rounded-lg"
+            value={totalSlots}
+            onChange={(e) => setTotalSlots(Number(e.target.value))}
+          />
+        </div>
 
-       {/* Status */}
-    <div className="mb-3">
-      <label className="block text-sm font-medium text-slate-700 mb-1">
-        Status
-      </label>
-      <select
-        className="w-full border p-3 rounded-lg"
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-      >
-        <option value="active">Active</option>
-        <option value="maintenance">Maintenance</option>
-        <option value="inactive">Inactive</option>
-      </select>
-    </div>
+        {/* Emergency Tire Count */}
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Emergency Tires (Extra)
+          </label>
+          <input
+            type="number"
+            min={0}
+            className="w-full border p-3 rounded-lg"
+            value={emergencyTireCount}
+            onChange={(e) =>
+              setEmergencyTireCount(Number(e.target.value))
+            }
+          />
+          <p className="text-xs text-slate-500 mt-1">
+            Number of extra tires carried for emergency replacement
+          </p>
+        </div>
+
+        {/* Status */}
+        <div className="mb-3">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Status
+          </label>
+          <select
+            className="w-full border p-3 rounded-lg"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="active">Active</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
 
         {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
 

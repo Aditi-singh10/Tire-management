@@ -20,6 +20,19 @@ const BusSchema = new mongoose.Schema(
       enum: ["active", "maintenance", "inactive"],
       default: "active",
     },
+
+    emergencyTireCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    
+    emergencyTires: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tire",
+      },
+    ],
   },
   { timestamps: true }
 );
