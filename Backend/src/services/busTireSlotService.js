@@ -19,7 +19,7 @@ exports.mountTireToBus = async ({ busId, tireId, slotPosition }) => {
   await TireHistory.create({
     tireId,
     busId,
-    tripId: null,             
+    tripId: null,
     slotPosition,
     startTime: new Date(),
   });
@@ -32,17 +32,22 @@ exports.mountTireToBus = async ({ busId, tireId, slotPosition }) => {
   });
 };
 
-
 /**
  * UNMOUNT TIRE (FIXED)
  */
-exports.unmountTireFromBus = async ({ busId, slotPosition, reason, kmServed = 0 }) => {
+exports.unmountTireFromBus = async ({
+  busId,
+  slotPosition,
+  reason,
+  kmServed = 0,
+}) => {
+  
   const slot = await BusTireSlot.findOne({ busId, slotPosition });
   if (!slot) {
     throw new Error("Slot already empty");
   }
 
-  // Update tire status 
+  // Update tire status
   let newStatus = "available";
   if (reason === "Puncture") newStatus = "repair";
   if (reason === "Wear") newStatus = "scrap";
@@ -61,6 +66,8 @@ exports.unmountTireFromBus = async ({ busId, slotPosition, reason, kmServed = 0 
         tripId: activeTrip._id,
         slotPosition,
         endTime: null,
+        startTime: new Date(),
+        startDistance: activeTrip?.currentDistance || 0,
       },
       {
         endTime: new Date(),
@@ -75,7 +82,6 @@ exports.unmountTireFromBus = async ({ busId, slotPosition, reason, kmServed = 0 
 
   return { message: "Tire unmounted successfully" };
 };
-
 
 /**
  * GET ALL SLOTS OF BUS

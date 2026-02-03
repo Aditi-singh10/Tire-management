@@ -21,7 +21,7 @@ const colorMap = {
 export default function TimelineItem({ item, isLast }) {
   const Icon = iconMap[item.removalReason] || CheckCircle;
 
-  // 🔹 Duration (hours)
+  //  Duration (hours)
   const durationHours =
     item.endTime &&
     Math.round(

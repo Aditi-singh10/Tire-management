@@ -13,7 +13,7 @@ const TireHistorySchema = new mongoose.Schema(
       ref: "Bus",
       required: true,
     },
-    
+
     //TRIP LINK
     tripId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -38,6 +38,15 @@ const TireHistorySchema = new mongoose.Schema(
 
     endTime: {
       type: Date,
+      default: null,
+    },
+
+    startDistance: {
+      type: Number,
+      default: null,
+    },
+    endDistance: {
+      type: Number,
       default: null,
     },
 
