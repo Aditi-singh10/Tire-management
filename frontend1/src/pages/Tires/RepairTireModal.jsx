@@ -9,20 +9,19 @@ export default function RepairTireModal({
 }) {
   const [newCode, setNewCode] = useState("");
   const [maxLifeKm, setMaxLifeKm] = useState("");
-  const [useNewIdentity, setUseNewIdentity] = useState(false);
+   const requiresNewIdentity = tire?.status === "expired";
   const trimmedCode = newCode.trim();
   const parsedMaxLifeKm = Number(maxLifeKm);
-  const canSubmit =
-     !useNewIdentity ||
-    (trimmedCode.length > 0 &&
-      Number.isFinite(parsedMaxLifeKm) &&
-      parsedMaxLifeKm > 0);
+  
+      const canSubmit = requiresNewIdentity
+    ? trimmedCode.length > 0 && Number.isFinite(parsedMaxLifeKm) &&
+      parsedMaxLifeKm > 0:true;
 
   const handleRepair = async () => {
     if (!canSubmit) return;
     await repairTire(
       tire._id,
-      useNewIdentity
+      requiresNewIdentity
         ? {
             newTireCode: trimmedCode,
             maxLifeKm: parsedMaxLifeKm,
@@ -43,32 +42,32 @@ export default function RepairTireModal({
           Repair Tire {tire.tireCode}
         </h3>
 
-       <label className="flex items-center gap-2 text-sm mb-3">
-          <input
-            type="checkbox"
-            checked={useNewIdentity}
-            onChange={(event) =>
-              setUseNewIdentity(event.target.checked)
-            }
-          />
-          Assign a new ID and reset life
-        </label>
-        <input
-          placeholder="New Tire Code (e.g. A01-R1)"
-          className="w-full border p-2 rounded mb-3"
-          value={newCode}
-          onChange={(e) => setNewCode(e.target.value)}
-           disabled={!useNewIdentity}
-        />
+       {requiresNewIdentity ? (
+          <>
+            <p className="text-sm text-slate-600 mb-3">
+              Expired tires must be assigned a new ID and life.
+            </p>
+            <input
+              placeholder="New Tire Code (e.g. A01-R1)"
+              className="w-full border p-2 rounded mb-3"
+              value={newCode}
+              onChange={(e) => setNewCode(e.target.value)}
+            />
 
-        <input
-          placeholder="Max Life Km"
-          type="number"
-          className="w-full border p-2 rounded mb-4"
-          value={maxLifeKm}
-          onChange={(e) => setMaxLifeKm(e.target.value)}
-           disabled={!useNewIdentity}
-        />
+          <input
+              placeholder="Max Life Km"
+              type="number"
+              className="w-full border p-2 rounded mb-4"
+              value={maxLifeKm}
+              onChange={(e) => setMaxLifeKm(e.target.value)}
+            />
+          </>
+        ) : (
+          <p className="text-sm text-slate-600 mb-4">
+            This tire will be repaired and returned to
+            availability with the same ID.
+          </p>
+        )}
 
         <div className="flex justify-end gap-2">
           <button

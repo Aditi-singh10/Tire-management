@@ -8,7 +8,7 @@ export default function TireCard({ tire, onRepair }) {
   const kmUsed = tire?.kmUsed ?? 0;
   const maxKm = tire?.maxKm ?? 0;
   const status = tire?.status ?? "unknown";
-  const canRepair = status === "expired";
+  const canRepair = status === "expired" || status === "punctured";
 
   const usage =
     maxKm > 0 ? Math.min((kmUsed / maxKm) * 100, 100) : 0;

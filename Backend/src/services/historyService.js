@@ -1,5 +1,7 @@
 const TireHistory = require("../models/tireHistoryModel");
 const Trip = require("../models/tripModel");
+const BusTireSlot = require("../models/busTireSlotModel");
+const Bus = require("../models/busModel");
 
 /**
  * Get history of a bus
@@ -20,13 +22,42 @@ exports.getTireHistory = async (tireId) => {
     .populate("tireId", "tireCode maxLifeKm")
     .sort({ startTime: -1 });
 
-  const active = history.find(h => !h.endTime) || null;
+  let active = history.find((h) => !h.endTime) || null;
+
+  if (!active) {
+    const mountedSlot = await BusTireSlot.findOne({ tireId }).populate(
+      "busId",
+      "busNumber"
+    );
+
+    if (mountedSlot) {
+      active = {
+        busId: mountedSlot.busId,
+        slotPosition: mountedSlot.slotPosition,
+        startTime: mountedSlot.mountedAt || mountedSlot.createdAt,
+        isEmergency: false,
+      };
+    } else {
+      const emergencyBus = await Bus.findOne({
+        emergencyTires: tireId,
+      }).select("busNumber updatedAt");
+
+      if (emergencyBus) {
+        active = {
+          busId: emergencyBus,
+          slotPosition: "emergency",
+          startTime: emergencyBus.updatedAt || new Date(),
+          isEmergency: true,
+        };
+      }
+    }
+  }
 
   return {
     current: active
       ? {
-          busId: active.busId?._id,
-          busNumber: active.busId?.busNumber,
+          busId: active.busId?._id || active.busId,
+          busNumber: active.busId?.busNumber || active.busNumber,
           slotPosition: active.slotPosition,
           startTime: active.startTime,
           isEmergency: active.isEmergency,
@@ -35,7 +66,6 @@ exports.getTireHistory = async (tireId) => {
     history,
   };
 };
-
 
 exports.getBusTripHistory = async (busId) => {
   // 1. Get all trips of this bus

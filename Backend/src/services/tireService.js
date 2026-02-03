@@ -68,18 +68,27 @@ exports.repairTire = async (id, { newTireCode, maxLifeKm }) => {
 
   const isExpired = tire.currentLifeKm >= tire.maxLifeKm;
   const isPunctured = tire.status === "punctured";
-  const isDamaged = tire.status === "expired";
-  const isRepairable = isExpired || isPunctured || isDamaged;
+  const isExpiredStatus = tire.status === "expired";
+  const isRepairable = isExpired || isPunctured || isExpiredStatus;
 
   if (!isRepairable) {
-    throw new Error("Only punctured or damaged tires can be repaired");
+    throw new Error("Only punctured or expired tires can be repaired");
   }
 
   const trimmedCode = typeof newTireCode === "string" ? newTireCode.trim() : "";
   const parsedMaxLifeKm = Number(maxLifeKm);
   const hasNewIdentity = Boolean(trimmedCode) || maxLifeKm !== undefined;
+  const requiresNewIdentity = isExpired || isExpiredStatus;
 
-    if (hasNewIdentity) {
+    if (requiresNewIdentity && !hasNewIdentity) {
+    throw new Error("Expired tires require a new tire code and max life km");
+  }
+
+  if (!requiresNewIdentity && hasNewIdentity) {
+    throw new Error("Only expired tires can be assigned a new ID");
+  }
+
+  if (requiresNewIdentity) {
     if (!trimmedCode) {
       throw new Error("New tire code is required");
     }
@@ -99,7 +108,7 @@ exports.repairTire = async (id, { newTireCode, maxLifeKm }) => {
   }
 
   
-  tire.status = "repaired";
+  tire.status = "available";
   await tire.save();
 
   return tire;
