@@ -19,7 +19,9 @@ export default function MountTireModal({
   useEffect(() => {
     getTires().then((res) =>
       setTires(
-        res.data.filter((t) => t.status === "available")
+         res.data.filter(
+          (t) => t.status === "available" || t.status === "repaired"
+        )
       )
     );
   }, []);

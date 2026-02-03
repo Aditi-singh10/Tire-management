@@ -24,6 +24,7 @@ const TireSchema = new mongoose.Schema(
       enum: [
         "available",
         "mounted",
+        "maintenance",
         "punctured",
         "expired",
         "repaired",

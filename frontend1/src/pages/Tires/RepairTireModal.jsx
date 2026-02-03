@@ -9,19 +9,26 @@ export default function RepairTireModal({
 }) {
   const [newCode, setNewCode] = useState("");
   const [maxLifeKm, setMaxLifeKm] = useState("");
+  const [useNewIdentity, setUseNewIdentity] = useState(false);
   const trimmedCode = newCode.trim();
   const parsedMaxLifeKm = Number(maxLifeKm);
   const canSubmit =
-    trimmedCode.length > 0 &&
-    Number.isFinite(parsedMaxLifeKm) &&
-    parsedMaxLifeKm > 0;
+     !useNewIdentity ||
+    (trimmedCode.length > 0 &&
+      Number.isFinite(parsedMaxLifeKm) &&
+      parsedMaxLifeKm > 0);
 
   const handleRepair = async () => {
-     if (!canSubmit) return;
-    await repairTire(tire._id, {
-      newTireCode: trimmedCode,
-      maxLifeKm: parsedMaxLifeKm,
-    });
+    if (!canSubmit) return;
+    await repairTire(
+      tire._id,
+      useNewIdentity
+        ? {
+            newTireCode: trimmedCode,
+            maxLifeKm: parsedMaxLifeKm,
+          }
+        : {}
+    );
     onRepaired();
   };
 
@@ -36,11 +43,22 @@ export default function RepairTireModal({
           Repair Tire {tire.tireCode}
         </h3>
 
+       <label className="flex items-center gap-2 text-sm mb-3">
+          <input
+            type="checkbox"
+            checked={useNewIdentity}
+            onChange={(event) =>
+              setUseNewIdentity(event.target.checked)
+            }
+          />
+          Assign a new ID and reset life
+        </label>
         <input
           placeholder="New Tire Code (e.g. A01-R1)"
           className="w-full border p-2 rounded mb-3"
           value={newCode}
           onChange={(e) => setNewCode(e.target.value)}
+           disabled={!useNewIdentity}
         />
 
         <input
@@ -49,6 +67,7 @@ export default function RepairTireModal({
           className="w-full border p-2 rounded mb-4"
           value={maxLifeKm}
           onChange={(e) => setMaxLifeKm(e.target.value)}
+           disabled={!useNewIdentity}
         />
 
         <div className="flex justify-end gap-2">

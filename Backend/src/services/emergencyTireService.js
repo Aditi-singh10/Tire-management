@@ -9,7 +9,11 @@ exports.mountEmergencyTire = async ({ busId, tireId }) => {
     throw new Error("Emergency tire capacity full");
   }
 
-  await Tire.findByIdAndUpdate(tireId, { status: "mounted-emergency" });
+   const mountedTire = await Tire.findByIdAndUpdate(
+    tireId,
+    { status: "mounted" },
+    { new: true }
+  );
 
   bus.emergencyTires.push(tireId);
   await bus.save();
@@ -20,6 +24,7 @@ exports.mountEmergencyTire = async ({ busId, tireId }) => {
     slotPosition: "emergency",
     isEmergency: true,
     startTime: new Date(),
+     tireCodeSnapshot: mountedTire?.tireCode || null,
   });
 };
 
@@ -29,7 +34,7 @@ exports.unmountEmergencyTire = async ({ busId, tireId, reason }) => {
   });
 
   let status = "available";
-  if (reason === "Puncture") status = "repair";
+  if (reason === "Puncture") status = "punctured";
 
   await Tire.findByIdAndUpdate(tireId, { status });
 

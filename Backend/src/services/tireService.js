@@ -1,4 +1,5 @@
 const Tire = require("../models/tireModel");
+const TireHistory = require("../models/tireHistoryModel");
 
 /**
  * Updates tire status WITHOUT saving
@@ -65,28 +66,39 @@ exports.repairTire = async (id, { newTireCode, maxLifeKm }) => {
   const tire = await Tire.findById(id);
   if (!tire) throw new Error("Tire not found");
 
-  const trimmedCode =
-    typeof newTireCode === "string" ? newTireCode.trim() : "";
-  const parsedMaxLifeKm = Number(maxLifeKm);
-
-  if (!trimmedCode) {
-    throw new Error("New tire code is required");
-  }
-
-  if (!Number.isFinite(parsedMaxLifeKm) || parsedMaxLifeKm <= 0) {
-    throw new Error("Max life km must be a positive number");
-  }
-
   const isExpired = tire.currentLifeKm >= tire.maxLifeKm;
   const isPunctured = tire.status === "punctured";
+  const isDamaged = tire.status === "expired";
+  const isRepairable = isExpired || isPunctured || isDamaged;
 
-  if (!isExpired && !isPunctured) {
-    throw new Error("Only punctured or expired tires can be repaired");
+  if (!isRepairable) {
+    throw new Error("Only punctured or damaged tires can be repaired");
   }
 
-  tire.tireCode = trimmedCode;
-  tire.maxLifeKm = parsedMaxLifeKm;
-  tire.currentLifeKm = 0;
+  const trimmedCode = typeof newTireCode === "string" ? newTireCode.trim() : "";
+  const parsedMaxLifeKm = Number(maxLifeKm);
+  const hasNewIdentity = Boolean(trimmedCode) || maxLifeKm !== undefined;
+
+    if (hasNewIdentity) {
+    if (!trimmedCode) {
+      throw new Error("New tire code is required");
+    }
+  
+   if (!Number.isFinite(parsedMaxLifeKm) || parsedMaxLifeKm <= 0) {
+      throw new Error("Max life km must be a positive number");
+    }
+
+     await TireHistory.updateMany(
+      { tireId: tire._id, tireCodeSnapshot: { $in: [null, ""] } },
+      { $set: { tireCodeSnapshot: tire.tireCode } }
+    );
+   tire.tireCode = trimmedCode;
+    tire.maxLifeKm = parsedMaxLifeKm;
+    tire.currentLifeKm = 0;
+
+  }
+
+  
   tire.status = "repaired";
   await tire.save();
 

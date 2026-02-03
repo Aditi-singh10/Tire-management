@@ -104,7 +104,7 @@ exports.getBusTripSummary = async (busId) => {
 
       return {
         slotPosition: th.slotPosition,
-        tireCode: th.tireId?.tireCode || "—",
+        tireCode: th.tireCodeSnapshot || th.tireId?.tireCode || "—",
         kmServed: th.kmServed,
         mountedFrom: th.startTime,
         mountedTill: th.endTime,

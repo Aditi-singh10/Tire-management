@@ -14,6 +14,12 @@ const TireHistorySchema = new mongoose.Schema(
       required: true,
     },
 
+    tireCodeSnapshot: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    
     //TRIP LINK
     tripId: {
       type: mongoose.Schema.Types.ObjectId,

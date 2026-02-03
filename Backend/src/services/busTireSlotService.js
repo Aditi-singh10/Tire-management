@@ -26,8 +26,9 @@ exports.mountTireToBus = async ({
 
     //  Update OLD tire status
     let oldTireStatus = "available";
-    if (reason === "Puncture") oldTireStatus = "repair";
-    if (reason === "Wear") oldTireStatus = "scrap";
+   if (reason === "Puncture") oldTireStatus = "punctured";
+    if (reason === "Wear") oldTireStatus = "expired";
+
 
     await Tire.findByIdAndUpdate(oldTireId, { status: oldTireStatus });
 
@@ -50,7 +51,11 @@ exports.mountTireToBus = async ({
   }
 
   //  Mount NEW tire
-  await Tire.findByIdAndUpdate(tireId, { status: "mounted" });
+  const mountedTire = await Tire.findByIdAndUpdate(
+    tireId,
+    { status: "mounted" },
+    { new: true }
+  );
 
   //  Create NEW history
   await TireHistory.create({
@@ -59,6 +64,7 @@ exports.mountTireToBus = async ({
     tripId: null,
     slotPosition,
     startTime: new Date(),
+    tireCodeSnapshot: mountedTire?.tireCode || null,
   });
 
   //  Create slot entry
@@ -87,8 +93,8 @@ exports.unmountTireFromBus = async ({
 
   // Update tire status
   let newStatus = "available";
-  if (reason === "Puncture") newStatus = "repair";
-  if (reason === "Wear") newStatus = "scrap";
+ if (reason === "Puncture") newStatus = "punctured";
+  if (reason === "Wear") newStatus = "expired";
   if (reason === "Maintenance") newStatus = "maintenance";
 
   await Tire.findByIdAndUpdate(slot.tireId, { status: newStatus });

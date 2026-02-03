@@ -25,7 +25,9 @@ export default function AddEventModal({ tripId, onClose }) {
 
       const tireRes = await api.get("/tires");
       setAvailableTires(
-        tireRes.data.filter((t) => t.status === "available")
+         tireRes.data.filter(
+          (t) => t.status === "available" || t.status === "repaired"
+        )
       );
     };
 

@@ -81,9 +81,10 @@ export default function TimelineItem({ item, isLast }) {
         )}
 
         {/* Tire */}
-        {item.tireId?.tireCode && (
+         {(item.tireCodeSnapshot || item.tireId?.tireCode) && (
           <p className="text-sm text-slate-700">
-            Tire: <b>{item.tireId.tireCode}</b>
+            Tire:{" "}
+            <b>{item.tireCodeSnapshot || item.tireId?.tireCode}</b>
           </p>
         )}
 
