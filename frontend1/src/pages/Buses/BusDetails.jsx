@@ -124,7 +124,7 @@ export default function BusDetails() {
 
       {/* ================= EMERGENCY TIRES ================= */}
       <h3 className="text-xl font-semibold mb-3 text-amber-700">
-        Emergency Tires
+        Spare Tires
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
