@@ -36,6 +36,8 @@ const TripSchema = new mongoose.Schema(
         removedTire: { type: mongoose.Schema.Types.ObjectId, ref: "Tire" },
         installedTire: { type: mongoose.Schema.Types.ObjectId, ref: "Tire" },
         distanceAtEvent: Number,
+        dispatchType: { type: String, enum: ["outbound", "return"] },
+        legDistance: Number,
         time: Date,
       },
     ],

@@ -59,6 +59,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
         slotPosition: "",
         eventType: "",
         installedTireId: "",
+        dispatchType: "outbound",
         distanceAtEvent: "",
       },
     ]);
@@ -77,21 +78,31 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
       return;
     }
 
-     const maxDistance =
+    const maxDistance =
       endType === "aborted"
         ? Number(distance)
         : Number(trip?.totalDistance || 0);
+    const oneWayDistance =
+      Number(trip?.totalDistance || 0) > 0
+        ? Number(trip?.totalDistance || 0) / 2
+        : 0;
 
     const invalidReplacement = replacements.some((replacement) => {
       const distanceValue = Number(replacement.distanceAtEvent);
+      const eventDistance =
+        replacement.dispatchType === "return" && oneWayDistance > 0
+          ? oneWayDistance + distanceValue
+          : distanceValue;
       return (
         !replacement.slotPosition ||
         !replacement.eventType ||
         !replacement.installedTireId ||
+        !replacement.dispatchType ||
         !replacement.distanceAtEvent ||
         Number.isNaN(distanceValue) ||
-         distanceValue <= 0 ||
-        (maxDistance > 0 && distanceValue > maxDistance)
+        distanceValue <= 0 ||
+        (oneWayDistance > 0 && distanceValue > oneWayDistance) ||
+        (maxDistance > 0 && eventDistance > maxDistance)
       );
     });
 
@@ -113,14 +124,25 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
       };
     }
 
-     const sortedReplacements = [...replacements].sort(
-      (a, b) =>
-        Number(a.distanceAtEvent) - Number(b.distanceAtEvent)
-    );
+    const oneWayDistanceForSort =
+      Number(trip?.totalDistance || 0) > 0
+        ? Number(trip?.totalDistance || 0) / 2
+        : 0;
+    const sortedReplacements = [...replacements].sort((a, b) => {
+      const aDistance =
+        a.dispatchType === "return" && oneWayDistanceForSort > 0
+          ? oneWayDistanceForSort + Number(a.distanceAtEvent)
+          : Number(a.distanceAtEvent);
+      const bDistance =
+        b.dispatchType === "return" && oneWayDistanceForSort > 0
+          ? oneWayDistanceForSort + Number(b.distanceAtEvent)
+          : Number(b.distanceAtEvent);
+      return aDistance - bDistance;
+    });
 
     setLoading(true);
     try {
-        if (emergencyOccurred === "yes") {
+      if (emergencyOccurred === "yes") {
         const slotTireMap = new Map(
           slots
             .filter((slot) => slot?.tireId?._id)
@@ -137,6 +159,8 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
             slotPosition: replacement.slotPosition,
             removedTireId,
             installedTireId: replacement.installedTireId,
+            dispatchType: replacement.dispatchType,
+            legDistance: Number(replacement.distanceAtEvent),
             distanceAtEvent: Number(replacement.distanceAtEvent),
           });
           slotTireMap.set(
@@ -161,7 +185,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
       >
         <h3 className="font-bold mb-4">End Trip</h3>
 
-          <div className="mb-4">
+        <div className="mb-4">
           <p className="font-semibold text-sm mb-2">End type</p>
           <div className="flex gap-4">
             <label className="flex items-center gap-2 text-sm">
@@ -195,7 +219,6 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
             </p>
           )}
         </div>
-
 
         {endType === "aborted" && (
           <>
@@ -338,9 +361,31 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                       ))}
                     </select>
 
+                      <select
+                      className="w-full border p-2 mb-2 rounded"
+                      value={replacement.dispatchType}
+                      onChange={(e) =>
+                        updateReplacement(
+                          index,
+                          "dispatchType",
+                          e.target.value
+                        )
+                      }
+                    >
+                      <option value="outbound">Going to destination</option>
+                      <option value="return">Coming back</option>
+                    </select>
+
+                    {trip?.totalDistance ? (
+                      <p className="text-xs text-slate-500 mb-2">
+                        One-way distance: {trip.totalDistance / 2} km
+                      </p>
+                    ) : null}
+
+
                     <input
                       type="number"
-                      placeholder="Defect at distance (km)"
+                       placeholder="Distance in leg (km)"
                       className="w-full border p-2 rounded"
                       value={replacement.distanceAtEvent}
                       onChange={(e) =>

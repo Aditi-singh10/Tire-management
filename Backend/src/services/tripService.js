@@ -69,10 +69,10 @@ exports.endTrip = async (tripId, body) => {
   trip.actualDistance = distance;
   await trip.save();
 
-   const tripEndTime = new Date();
+  const tripEndTime = new Date();
 
   //  CLOSE ACTIVE TIRE HISTORIES
-   const histories = await TireHistory.find({
+  const histories = await TireHistory.find({
     busId: trip.busId,
     $or: [{ tripId: trip._id }, { endTime: null }],
   });
@@ -83,14 +83,14 @@ exports.endTrip = async (tripId, body) => {
     let endDistance = history.endDistance;
 
     if (!history.endTime) {
-       history.tripId = history.tripId || trip._id;
+      history.tripId = history.tripId || trip._id;
       endDistance = distance;
       history.endTime = tripEndTime;
       history.endDistance = distance;
       history.removalReason =
         endStatus === "completed" ? "trip_end" : "aborted";
     }
-  
+
     if (endDistance === null || endDistance === undefined) {
       endDistance = distance;
       history.endDistance = distance;
@@ -122,7 +122,7 @@ exports.endTrip = async (tripId, body) => {
 
     await tire.save();
   }
-   //  REOPEN ACTIVE MOUNTS AFTER TRIP ENDS
+  //  REOPEN ACTIVE MOUNTS AFTER TRIP ENDS
   const mountedSlots = await BusTireSlot.find({ busId: trip.busId });
   const bus = await Bus.findById(trip.busId);
   const emergencyTireIds = bus?.emergencyTires || [];
@@ -144,8 +144,7 @@ exports.endTrip = async (tripId, body) => {
         slotPosition: slot.slotPosition,
         startTime: tripEndTime,
         startDistance: distance,
-        tireCodeSnapshot:
-          tireCodeById.get(slot.tireId.toString()) || null,
+        tireCodeSnapshot: tireCodeById.get(slot.tireId.toString()) || null,
       })
     )
   );
@@ -160,8 +159,7 @@ exports.endTrip = async (tripId, body) => {
         isEmergency: true,
         startTime: tripEndTime,
         startDistance: distance,
-        tireCodeSnapshot:
-          tireCodeById.get(tireId.toString()) || null,
+        tireCodeSnapshot: tireCodeById.get(tireId.toString()) || null,
       })
     )
   );
@@ -176,6 +174,8 @@ exports.addTripEvent = async (tripId, data) => {
     removedTireId,
     installedTireId,
     distanceAtEvent,
+    dispatchType,
+    legDistance,
   } = data;
 
   if (
@@ -191,13 +191,34 @@ exports.addTripEvent = async (tripId, data) => {
   const trip = await Trip.findById(tripId);
   if (!trip) throw new Error("Trip not found");
 
-   if (trip.endTime) throw new Error("Trip already ended");
+  if (trip.endTime) throw new Error("Trip already ended");
 
-  const distanceValue = Number(distanceAtEvent);
-  if (Number.isNaN(distanceValue) || distanceValue <= 0) {
-    throw new Error("Invalid distanceAtEvent value");
+  const totalDistance = Number(trip.totalDistance || 0);
+  const oneWayDistance = totalDistance > 0 ? totalDistance / 2 : 0;
+  let distanceValue = Number(distanceAtEvent);
+  let legDistanceValue = null;
+
+  if (dispatchType) {
+    if (!["outbound", "return"].includes(dispatchType)) {
+      throw new Error("Invalid dispatchType value");
+    }
+    legDistanceValue = Number(legDistance ?? distanceAtEvent);
+    if (Number.isNaN(legDistanceValue) || legDistanceValue <= 0) {
+      throw new Error("Invalid legDistance value");
+    }
+    if (oneWayDistance > 0 && legDistanceValue > oneWayDistance) {
+      throw new Error("Event distance exceeds one-way distance");
+    }
+    distanceValue =
+      dispatchType === "return"
+        ? oneWayDistance + legDistanceValue
+        : legDistanceValue;
+  } else {
+    if (Number.isNaN(distanceValue) || distanceValue <= 0) {
+      throw new Error("Invalid distanceAtEvent value");
+    }
   }
-  if (trip.totalDistance && distanceValue > Number(trip.totalDistance)) {
+  if (totalDistance > 0 && distanceValue > totalDistance) {
     throw new Error("Event distance exceeds trip distance");
   }
 
@@ -220,6 +241,8 @@ exports.addTripEvent = async (tripId, data) => {
     slotPosition,
     removedTire: removedTireId,
     installedTire: installedTireId,
+    dispatchType: dispatchType || null,
+    legDistance: legDistanceValue,
     distanceAtEvent: distanceValue,
     time: new Date(),
   });
@@ -227,18 +250,22 @@ exports.addTripEvent = async (tripId, data) => {
   await trip.save();
 
   /*  UPDATE TIRE STATUS */
-   const removedStatus = type === "puncture" ? "punctured" : "expired";
+  const removedStatus = type === "puncture" ? "punctured" : "expired";
 
   await Tire.findByIdAndUpdate(removedTireId, {
     status: removedStatus,
   });
 
-   const [removedTire, installedTire] = await Promise.all([
+  const [removedTire, installedTire] = await Promise.all([
     Tire.findById(removedTireId),
-    Tire.findByIdAndUpdate(installedTireId, { status: "mounted" }, { new: true }),
+    Tire.findByIdAndUpdate(
+      installedTireId,
+      { status: "mounted" },
+      { new: true }
+    ),
   ]);
 
-   await BusTireSlot.findOneAndUpdate(
+  await BusTireSlot.findOneAndUpdate(
     { busId: trip.busId, slotPosition },
     { tireId: installedTireId }
   );
@@ -255,7 +282,12 @@ exports.addTripEvent = async (tripId, data) => {
     await bus.save();
 
     await TireHistory.findOneAndUpdate(
-      { tireId: installedTireId, busId: trip.busId, isEmergency: true, endTime: null },
+      {
+        tireId: installedTireId,
+        busId: trip.busId,
+        isEmergency: true,
+        endTime: null,
+      },
       { endTime: new Date(), removalReason: "replacement" }
     );
   }
@@ -274,7 +306,7 @@ exports.addTripEvent = async (tripId, data) => {
     activeHistory.endDistance = distanceValue;
     activeHistory.kmServed = Math.max(0, distanceValue - startDistance);
     activeHistory.removalReason = type;
-     if (!activeHistory.tireCodeSnapshot) {
+    if (!activeHistory.tireCodeSnapshot) {
       activeHistory.tireCodeSnapshot = removedTire?.tireCode || null;
     }
     await activeHistory.save();
@@ -290,7 +322,7 @@ exports.addTripEvent = async (tripId, data) => {
       endDistance: distanceValue,
       kmServed: Math.max(0, distanceValue),
       removalReason: type,
-       tireCodeSnapshot: removedTire?.tireCode || null,
+      tireCodeSnapshot: removedTire?.tireCode || null,
     });
   }
 
@@ -302,7 +334,7 @@ exports.addTripEvent = async (tripId, data) => {
     isEmergency: Boolean(wasEmergencyTire),
     startTime: new Date(),
     startDistance: distanceValue,
-      tireCodeSnapshot: installedTire?.tireCode || null,
+    tireCodeSnapshot: installedTire?.tireCode || null,
   });
 
   return trip;

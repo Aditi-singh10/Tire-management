@@ -11,7 +11,9 @@ export default function AddEventModal({ tripId, onClose }) {
   const [removedTire, setRemovedTire] = useState(null);
   const [eventType, setEventType] = useState("");
   const [installedTireId, setInstalledTireId] = useState("");
-  const [distanceAtEvent, setDistanceAtEvent] = useState("");
+  const [dispatchType, setDispatchType] = useState("outbound");
+  const [legDistance, setLegDistance] = useState("");
+  const [oneWayDistance, setOneWayDistance] = useState(0);
   const [loading, setLoading] = useState(false);
 
   /* LOAD DATA */
@@ -19,7 +21,8 @@ export default function AddEventModal({ tripId, onClose }) {
     const loadData = async () => {
       const tripRes = await api.get(`/trips/${tripId}`);
       const busId = tripRes.data.busId._id;
-
+       const totalDistance = Number(tripRes.data.totalDistance || 0);
+      setOneWayDistance(totalDistance > 0 ? totalDistance / 2 : 0);
       const slotRes = await api.get(`/bus-tire-slots/${busId}`);
       setSlots(slotRes.data);
 
@@ -47,7 +50,7 @@ export default function AddEventModal({ tripId, onClose }) {
       !eventType ||
       !removedTire ||
       !installedTireId ||
-      !distanceAtEvent
+      !legDistance
     ) {
       return;
     }
@@ -57,7 +60,9 @@ export default function AddEventModal({ tripId, onClose }) {
       slotPosition,
       removedTireId: removedTire._id,
       installedTireId,
-      distanceAtEvent: Number(distanceAtEvent),
+      dispatchType,
+      legDistance: Number(legDistance),
+      distanceAtEvent: Number(legDistance),
     };
 
     setLoading(true);
@@ -125,13 +130,29 @@ export default function AddEventModal({ tripId, onClose }) {
           ))}
         </select>
 
+            {/* Dispatch */}
+        <select
+          className="w-full border p-2 mb-3 rounded"
+          value={dispatchType}
+          onChange={(e) => setDispatchType(e.target.value)}
+        >
+          <option value="outbound">Going to destination</option>
+          <option value="return">Coming back</option>
+        </select>
+
+        {oneWayDistance > 0 && (
+          <p className="text-xs text-slate-500 mb-2">
+            One-way distance: {oneWayDistance} km
+          </p>
+        )}
+
         {/* Distance */}
         <input
           type="number"
-          placeholder="Distance at event (km)"
+          placeholder="Distance in leg (km)"
           className="w-full border p-2 mb-4 rounded"
-          value={distanceAtEvent}
-          onChange={(e) => setDistanceAtEvent(e.target.value)}
+          value={legDistance}
+          onChange={(e) => setLegDistance(e.target.value)}
         />
 
         <div className="flex justify-end gap-2">

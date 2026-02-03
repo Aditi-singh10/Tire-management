@@ -7,7 +7,7 @@ import { startTrip } from "../../api/tripApi";
 export default function StartTrip() {
   const [buses, setBuses] = useState([]);
   const [busId, setBusId] = useState("");
-  const [totalDistance, setTotalDistance] = useState("");
+  const [oneWayDistance, setOneWayDistance] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -17,9 +17,10 @@ export default function StartTrip() {
 
   const handleStart = async () => {
     setLoading(true);
+    const parsedDistance = Number(oneWayDistance);
     const res = await startTrip({
       busId,
-      totalDistance: Number(totalDistance),
+      totalDistance: parsedDistance * 2,
     });
     navigate(`/trips/${res.data._id}`);
   };
@@ -43,14 +44,18 @@ export default function StartTrip() {
 
         <input
           type="number"
-          placeholder="Total Distance (km)"
+          placeholder="One-way Distance (km)"
           className="w-full border p-2 mb-4"
-          value={totalDistance}
-          onChange={(e) => setTotalDistance(e.target.value)}
+          value={oneWayDistance}
+          onChange={(e) => setOneWayDistance(e.target.value)}
         />
-
+        {oneWayDistance && (
+          <p className="text-xs text-slate-500 mb-3">
+            Total trip distance will be {Number(oneWayDistance) * 2} km.
+          </p>
+        )}
         <button
-          disabled={loading || !busId || !totalDistance}
+          disabled={loading || !busId || !oneWayDistance}
           onClick={handleStart}
           className="bg-blue-600 text-white w-full py-2 rounded-lg"
         >
