@@ -72,7 +72,10 @@ exports.endTrip = async (tripId, body) => {
    const tripEndTime = new Date();
 
   //  CLOSE ACTIVE TIRE HISTORIES
-  const histories = await TireHistory.find({ tripId: trip._id });
+   const histories = await TireHistory.find({
+    busId: trip.busId,
+    $or: [{ tripId: trip._id }, { endTime: null }],
+  });
   const tireUsage = new Map();
 
   for (const history of histories) {
@@ -80,6 +83,7 @@ exports.endTrip = async (tripId, body) => {
     let endDistance = history.endDistance;
 
     if (!history.endTime) {
+       history.tripId = history.tripId || trip._id;
       endDistance = distance;
       history.endTime = tripEndTime;
       history.endDistance = distance;

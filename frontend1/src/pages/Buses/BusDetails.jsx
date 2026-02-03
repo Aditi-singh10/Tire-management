@@ -147,7 +147,7 @@ export default function BusDetails() {
               }}
               className="mt-4 w-full bg-amber-600 text-white py-2 rounded-lg"
             >
-              Drop Emergency Tire
+              Drop Spare Tire
             </button>
           </motion.div>
         ))}
@@ -170,7 +170,7 @@ export default function BusDetails() {
               }}
               className="mt-6 w-full bg-amber-500 text-white py-2 rounded-lg"
             >
-              Pick Emergency Tire
+              Pick Spare Tire
             </button>
           </motion.div>
         ))}
