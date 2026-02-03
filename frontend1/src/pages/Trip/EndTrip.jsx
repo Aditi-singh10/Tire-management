@@ -4,7 +4,7 @@ import { addTripEvent, endTrip, getTripById } from "../../api/tripApi";
 import { getBusById, getBusTireSlots } from "../../api/busApi";
 
 export default function EndTripModal({ tripId, onClose, onSuccess }) {
-  const [endType, setEndType] = useState("");
+  const [endType, setEndType] = useState("completed");
   const [distance, setDistance] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -12,10 +12,12 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
   const [emergencyTires, setEmergencyTires] = useState([]);
   const [emergencyOccurred, setEmergencyOccurred] = useState("no");
   const [replacements, setReplacements] = useState([]);
+  const [trip, setTrip] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       const tripRes = await getTripById(tripId);
+      setTrip(tripRes.data);
       const busId = tripRes.data.busId?._id;
       if (!busId) {
         return;
@@ -75,6 +77,11 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
       return;
     }
 
+     const maxDistance =
+      endType === "aborted"
+        ? Number(distance)
+        : Number(trip?.totalDistance || 0);
+
     const invalidReplacement = replacements.some((replacement) => {
       const distanceValue = Number(replacement.distanceAtEvent);
       return (
@@ -83,7 +90,8 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
         !replacement.installedTireId ||
         !replacement.distanceAtEvent ||
         Number.isNaN(distanceValue) ||
-        distanceValue <= 0
+         distanceValue <= 0 ||
+        (maxDistance > 0 && distanceValue > maxDistance)
       );
     });
 
@@ -105,23 +113,36 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
       };
     }
 
+     const sortedReplacements = [...replacements].sort(
+      (a, b) =>
+        Number(a.distanceAtEvent) - Number(b.distanceAtEvent)
+    );
+
     setLoading(true);
     try {
         if (emergencyOccurred === "yes") {
-        for (const replacement of replacements) {
-          const slot = slots.find(
-            (slotItem) => slotItem.slotPosition === replacement.slotPosition
-          );
-          if (!slot?.tireId?._id) {
+        const slotTireMap = new Map(
+          slots
+            .filter((slot) => slot?.tireId?._id)
+            .map((slot) => [slot.slotPosition, slot.tireId._id])
+        );
+
+        for (const replacement of sortedReplacements) {
+          const removedTireId = slotTireMap.get(replacement.slotPosition);
+          if (!removedTireId) {
             return;
           }
           await addTripEvent(tripId, {
             type: replacement.eventType,
             slotPosition: replacement.slotPosition,
-            removedTireId: slot.tireId._id,
+            removedTireId,
             installedTireId: replacement.installedTireId,
             distanceAtEvent: Number(replacement.distanceAtEvent),
           });
+          slotTireMap.set(
+            replacement.slotPosition,
+            replacement.installedTireId
+          );
         }
       }
       await endTrip(tripId, payload);
@@ -139,6 +160,42 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
         className="bg-white p-6 rounded-xl w-[32rem] max-h-[85vh] overflow-y-auto"
       >
         <h3 className="font-bold mb-4">End Trip</h3>
+
+          <div className="mb-4">
+          <p className="font-semibold text-sm mb-2">End type</p>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="endType"
+                value="completed"
+                checked={endType === "completed"}
+                onChange={(e) => {
+                  setEndType(e.target.value);
+                  setDistance("");
+                  setReason("");
+                }}
+              />
+              Completed
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="endType"
+                value="aborted"
+                checked={endType === "aborted"}
+                onChange={(e) => setEndType(e.target.value)}
+              />
+              Aborted
+            </label>
+          </div>
+          {endType === "completed" && trip && (
+            <p className="text-xs text-slate-500 mt-2">
+              Planned distance: {trip.totalDistance} km
+            </p>
+          )}
+        </div>
+
 
         {endType === "aborted" && (
           <>
