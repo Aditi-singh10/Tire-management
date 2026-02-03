@@ -9,5 +9,5 @@ exports.getAllBuses = async () => {
 };
 
 exports.getBusById = async (id) => {
-  return await Bus.findById(id);
+  return await Bus.findById(id).populate("emergencyTires");
 };

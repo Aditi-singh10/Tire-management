@@ -9,3 +9,9 @@ export const getBusTireSlots = (busId) =>
 
 export const mountTire = (data) =>
   api.post("/bus-tire-slots", data);
+
+export const mountEmergencyTire = (data) =>
+  api.post("/bus-emergency-tires/mount", data);
+
+export const unmountEmergencyTire = (data) =>
+  api.post("/bus-emergency-tires/unmount", data);

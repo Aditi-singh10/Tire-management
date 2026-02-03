@@ -31,7 +31,7 @@ export default function BusDetails() {
 
   if (!bus) return null;
 
-  /* ---------- NORMAL SLOTS ---------- */
+  /* ================= NORMAL SLOTS ================= */
   const normalSlots = Array.from({ length: bus.totalSlots }, (_, i) => {
     const slotPosition = `slot-${i + 1}`;
     const mountedSlot = dbSlots.find(
@@ -45,11 +45,10 @@ export default function BusDetails() {
     };
   });
 
-  /* ---------- EMERGENCY SLOTS ---------- */
-  const emergencySlots = Array.from(
-    { length: bus.emergencyTireCount },
-    (_, i) => bus.emergencyTires?.[i] || null
-  );
+  /* ================= EMERGENCY SLOTS ================= */
+  const emergencyMounted = bus.emergencyTires || [];
+  const emergencyEmpty =
+    bus.emergencyTireCount - emergencyMounted.length;
 
   return (
     <motion.div
@@ -61,7 +60,6 @@ export default function BusDetails() {
         🚍 Bus {bus.busNumber}
       </h2>
 
-      {/* HISTORY */}
       <button
         onClick={() => navigate(`/history/bus-summary/${bus._id}`)}
         className="mb-6 bg-slate-800 text-white px-4 py-2 rounded-lg"
@@ -70,7 +68,9 @@ export default function BusDetails() {
       </button>
 
       {/* ================= NORMAL TIRES ================= */}
-      <h3 className="text-xl font-semibold mb-3">Normal Tire Slots</h3>
+      <h3 className="text-xl font-semibold mb-3">
+        Normal Tire Slots
+      </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         {normalSlots.map((slot) => (
@@ -124,53 +124,54 @@ export default function BusDetails() {
 
       {/* ================= EMERGENCY TIRES ================= */}
       <h3 className="text-xl font-semibold mb-3 text-amber-700">
-        Emergency Tires (Extra)
+        Emergency Tires
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {emergencySlots.map((tire, index) => (
+        {/* Mounted Emergency Tires */}
+        {emergencyMounted.map((tire) => (
           <motion.div
-            key={index}
-            whileHover={{ scale: 1.03 }}
-            className="bg-amber-50 p-4 rounded-xl shadow border border-amber-300"
+            key={tire._id}
+            className="bg-amber-50 p-4 rounded-xl border border-amber-300"
           >
-            <p className="text-xs text-amber-700">Emergency Slot</p>
-            <p className="font-semibold">Emergency-{index + 1}</p>
+            <p className="text-xs text-amber-700">
+              Mounted Emergency Tire
+            </p>
+            <p className="font-semibold">{tire.tireCode}</p>
 
-            <p className="mt-2 text-sm">
-              Tire:{" "}
-              {tire ? (
-                <span className="font-medium">{tire.tireCode}</span>
-              ) : (
-                <span className="text-amber-600">Empty</span>
-              )}
+            <button
+              onClick={() => {
+                setActiveSlot(tire);
+                setIsEmergency(true);
+                setMode("unmount");
+              }}
+              className="mt-4 w-full bg-amber-600 text-white py-2 rounded-lg"
+            >
+              Drop Emergency Tire
+            </button>
+          </motion.div>
+        ))}
+
+        {/* Empty Emergency Slots */}
+        {Array.from({ length: emergencyEmpty }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="bg-amber-100 p-4 rounded-xl border border-dashed border-amber-400"
+          >
+            <p className="text-xs text-amber-700">
+              Empty Emergency Slot
             </p>
 
-            <div className="mt-4">
-              {tire ? (
-                <button
-                  onClick={() => {
-                    setActiveSlot(tire);
-                    setIsEmergency(true);
-                    setMode("unmount");
-                  }}
-                  className="w-full bg-amber-600 text-white py-2 rounded-lg"
-                >
-                  Unmount Emergency Tire
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setActiveSlot(null);
-                    setIsEmergency(true);
-                    setMode("mount");
-                  }}
-                  className="w-full bg-amber-500 text-white py-2 rounded-lg"
-                >
-                  Mount Emergency Tire
-                </button>
-              )}
-            </div>
+            <button
+              onClick={() => {
+                setIsEmergency(true);
+                setMode("mount");
+                setActiveSlot(null);
+              }}
+              className="mt-6 w-full bg-amber-500 text-white py-2 rounded-lg"
+            >
+              Pick Emergency Tire
+            </button>
           </motion.div>
         ))}
       </div>
