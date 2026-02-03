@@ -26,6 +26,11 @@ const TireHistorySchema = new mongoose.Schema(
       required: true,
     },
 
+    isEmergency: {
+      type: Boolean,
+      default: false,
+    },
+
     kmServed: {
       type: Number,
       default: 0,
@@ -52,7 +57,17 @@ const TireHistorySchema = new mongoose.Schema(
 
     removalReason: {
       type: String,
-      enum: ["trip_end", "puncture", "expired", "repair"],
+      enum: [
+        "trip_end",
+        "puncture",
+        "expired",
+        "repair",
+        "aborted",
+        "wear",
+        "replacement",
+        "maintenance",
+        "emergency",
+      ],
       default: null,
     },
   },

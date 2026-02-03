@@ -29,6 +29,7 @@ exports.getTireHistory = async (tireId) => {
           busNumber: active.busId?.busNumber,
           slotPosition: active.slotPosition,
           startTime: active.startTime,
+          isEmergency: active.isEmergency,
         }
       : null,
     history,

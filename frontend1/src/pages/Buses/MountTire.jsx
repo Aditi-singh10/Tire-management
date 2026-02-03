@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { mountTire } from "../../api/busApi";
+// import { mountTire } from "../../api/busApi";
+import { mountEmergencyTire, mountTire } from "../../api/busApi";
 import { getTires } from "../../api/tireApi";
 
 export default function MountTireModal({
   busId,
   slotPosition,
+  busNumber,
+  isEmergency = false,
   onClose,
   onDone,
 }) {
@@ -24,9 +27,17 @@ export default function MountTireModal({
   const handleMount = async () => {
     if (!tireId) return;
     setLoading(true);
-    await mountTire({ busId, tireId, slotPosition });
+    // await mountTire({ busId, tireId, slotPosition });
+      if (isEmergency) {
+      await mountEmergencyTire({ busId, tireId });
+    } else {
+      await mountTire({ busId, tireId, slotPosition });
+    }
     onDone();
   };
+
+  const selectedTire = tires.find((t) => t._id === tireId);
+
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -36,12 +47,14 @@ export default function MountTireModal({
         className="bg-white p-6 rounded-xl w-96"
       >
         <h3 className="text-lg font-bold mb-2">
-          Mount Tire
+          {isEmergency ? "Pick Emergency Tire" : "Mount Tire"}
         </h3>
 
-        <p className="text-sm mb-4">
-          Slot: <b>{slotPosition}</b>
-        </p>
+        {!isEmergency && (
+          <p className="text-sm mb-4">
+            Slot: <b>{slotPosition}</b>
+          </p>
+        )}
 
         <select
           className="w-full border p-3 rounded-lg mb-4"
@@ -55,6 +68,15 @@ export default function MountTireModal({
           ))}
         </select>
 
+        {isEmergency && selectedTire && busNumber && (
+          <p className="text-sm text-slate-600 mb-4">
+            Tire <b>{selectedTire.tireCode}</b> is being carried
+            as an emergency tire on Bus <b>{busNumber}</b> for
+            immediate replacement in case of a puncture or other
+            issues during the trip.
+          </p>
+        )}
+
         <div className="flex justify-end gap-2">
           <button onClick={onClose}>Cancel</button>
           <button
@@ -62,7 +84,7 @@ export default function MountTireModal({
             disabled={loading}
             className="bg-green-600 text-white px-4 py-2 rounded-lg"
           >
-            Mount
+             {isEmergency ? "Carry" : "Mount"}
           </button>
         </div>
       </motion.div>

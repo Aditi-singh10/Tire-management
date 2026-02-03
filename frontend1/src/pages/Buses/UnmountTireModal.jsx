@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
+// import axios from "axios";
+import { unmountEmergencyTire, unmountTire } from "../../api/busApi";
 
 export default function UnmountTireModal({
   slot,
-  busId,         
+  busId,
+  isEmergency = false,         
   onClose,
   onDone,
 }) {
@@ -12,21 +14,19 @@ export default function UnmountTireModal({
 
   const handleUnmount = async () => {
     try {
-      console.log("Unmounting:", {
-        busId,
-        slotPosition: slot.slotPosition,
-        reason,
-      });
-
-      await axios.post(
-        "http://localhost:5000/api/bus-tire-slots/unmount",
-        {
-          busId: busId,                    
-          slotPosition: slot.slotPosition, 
-          reason: reason,                  
-        }
-      );
-
+       if (isEmergency) {
+        await unmountEmergencyTire({
+          busId,
+          tireId: slot._id,
+          reason,
+        });
+      } else {
+        await unmountTire({
+          busId,
+          slotPosition: slot.slotPosition,
+          reason,
+        });
+      }
       onDone(); // reload data
     } catch (err) {
       console.error("Unmount failed:", err);
@@ -37,11 +37,11 @@ export default function UnmountTireModal({
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <motion.div className="bg-white p-6 rounded-xl w-96">
         <h3 className="text-lg font-bold mb-2">
-          Unmount Tire
+           {isEmergency ? "Drop Emergency Tire" : "Unmount Tire"}
         </h3>
 
         <p className="mb-3 text-sm">
-          Tire: <b>{slot.tireId.tireCode}</b>
+          Tire: <b>{isEmergency ? slot.tireCode : slot.tireId.tireCode}</b>
         </p>
 
         <select

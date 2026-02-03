@@ -26,11 +26,16 @@ export default function TireHistory() {
         {current ? (
           <>
             <p>
-              Currently mounted on <b>{current.busNumber}</b>
+            {current.isEmergency
+                ? "Currently carried as an emergency tire on "
+                : "Currently mounted on "}
+              <b>{current.busNumber}</b>
             </p>
-            <p>
-              Slot: <b>{current.slotPosition}</b>
-            </p>
+             {current.slotPosition && !current.isEmergency && (
+              <p>
+                Slot: <b>{current.slotPosition}</b>
+              </p>
+            )}
             <p>
               Mounted since:{" "}
               {new Date(current.startTime).toLocaleString()}

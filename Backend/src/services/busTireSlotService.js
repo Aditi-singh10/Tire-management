@@ -115,6 +115,21 @@ exports.unmountTireFromBus = async ({
     );
   }
 
+   //  Close active tire history (regardless of trip state)
+  await TireHistory.findOneAndUpdate(
+    {
+      tireId: slot.tireId,
+      busId,
+      slotPosition,
+      endTime: null,
+    },
+    {
+      endTime: new Date(),
+      kmServed,
+      removalReason: reason?.toLowerCase() || null,
+    }
+  );
+  
   //  Always unmount
   await BusTireSlot.deleteOne({ _id: slot._id });
 

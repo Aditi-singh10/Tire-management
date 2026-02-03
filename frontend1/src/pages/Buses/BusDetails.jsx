@@ -181,6 +181,7 @@ export default function BusDetails() {
         <MountTireModal
           busId={bus._id}
           slotPosition={activeSlot}
+          busNumber={bus.busNumber}
           isEmergency={isEmergency}
           onClose={() => {
             setMode(null);

@@ -1,3 +1,7 @@
+const Bus = require("../models/busModel");
+const Tire = require("../models/tireModel");
+const TireHistory = require("../models/tireHistoryModel");
+
 exports.mountEmergencyTire = async ({ busId, tireId }) => {
   const bus = await Bus.findById(busId);
 
@@ -13,6 +17,7 @@ exports.mountEmergencyTire = async ({ busId, tireId }) => {
   await TireHistory.create({
     tireId,
     busId,
+    slotPosition: "emergency",
     isEmergency: true,
     startTime: new Date(),
   });
