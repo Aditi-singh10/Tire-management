@@ -30,11 +30,11 @@ export default function TimelineItem({ item, isLast }) {
       : translatedReason;
 
   //  Duration (hours)
-  const durationHours =
-    item.endTime &&
-    Math.round(
-      (new Date(item.endTime) - new Date(item.startTime)) / (1000 * 60 * 60)
-    );
+   const durationHours = item.endTime
+    ? Math.round(
+        (new Date(item.endTime) - new Date(item.startTime)) / (1000 * 60 * 60)
+      )
+    : null;
 
   //  Usage %
   const usagePercent = item.tireId?.maxLifeKm
@@ -112,11 +112,11 @@ export default function TimelineItem({ item, isLast }) {
         )}
 
         {/* Duration */}
-        {durationHours && (
+        {/* {durationHours  !== null && (
           <p className="text-sm text-slate-600">
              {t("history.duration")}: {durationHours} hrs
           </p>
-        )}
+        )} */}
 
         {/* Active Status */}
         {!item.endTime && (
