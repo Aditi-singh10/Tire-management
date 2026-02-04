@@ -19,7 +19,6 @@ export default function BusHistory() {
 
   const { currentTrip, previousTrips } = data;
 
-  
   const renderSlots = (slots = []) => {
     const visibleSlots = slots.filter(
       (slot) => slot.slotPosition?.toLowerCase() !== "emergency",
@@ -40,6 +39,93 @@ export default function BusHistory() {
             <div className="text-xs text-slate-500">{slot.kmServed} km</div>
           </div>
         ))}
+      </div>
+    );
+  };
+
+  const replacementColors = [
+    {
+      border: "border-indigo-200",
+      bg: "bg-indigo-50",
+      chip: "bg-indigo-100 text-indigo-700",
+    },
+    {
+      border: "border-emerald-200",
+      bg: "bg-emerald-50",
+      chip: "bg-emerald-100 text-emerald-700",
+    },
+    {
+      border: "border-amber-200",
+      bg: "bg-amber-50",
+      chip: "bg-amber-100 text-amber-700",
+    },
+    {
+      border: "border-sky-200",
+      bg: "bg-sky-50",
+      chip: "bg-sky-100 text-sky-700",
+    },
+    {
+      border: "border-fuchsia-200",
+      bg: "bg-fuchsia-50",
+      chip: "bg-fuchsia-100 text-fuchsia-700",
+    },
+  ];
+
+  const renderReplacements = (replacements = []) => {
+    if (!replacements.length) {
+      return null;
+    }
+
+    return (
+      <div className="mt-4">
+        <p className="text-sm font-semibold mb-2">
+          {t("buses.replacementChain")}
+        </p>
+        <div className="space-y-2">
+          {replacements.map((replacement, index) => {
+            const color = replacementColors[index % replacementColors.length];
+            return (
+              <div
+                key={`${replacement.slotPosition || "slot"}-${index}`}
+                className={clsx(
+                  "flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm",
+                  color.border,
+                  color.bg,
+                )}
+              >
+                <span
+                  className={clsx(
+                    "rounded-full px-2 py-0.5 text-xs font-semibold",
+                    color.chip,
+                  )}
+                >
+                  {replacement.removedTire}
+                </span>
+                <span className="text-xs text-slate-500">
+                  {t("buses.replaced")}
+                </span>
+                <span
+                  className={clsx(
+                    "rounded-full px-2 py-0.5 text-xs font-semibold",
+                    color.chip,
+                  )}
+                >
+                  {replacement.installedTire}
+                </span>
+                {replacement.slotPosition && (
+                  <span className="text-xs text-slate-500">
+                    • {t("buses.slot")} {replacement.slotPosition}
+                  </span>
+                )}
+                {replacement.distanceAtEvent !== null && (
+                  <span className="text-xs text-slate-500">
+                    • {replacement.distanceAtEvent} km
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -65,6 +151,7 @@ export default function BusHistory() {
           </p>
 
           {renderSlots(currentTrip.slots)}
+          {renderReplacements(currentTrip.replacements)}
         </div>
       )}
 
@@ -107,6 +194,7 @@ export default function BusHistory() {
                 )}
 
                 {renderSlots(trip.slots)}
+                {renderReplacements(trip.replacements)}
               </div>
             )}
           </div>

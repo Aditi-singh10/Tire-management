@@ -148,7 +148,11 @@ exports.getBusTripHistory = async (busId) => {
 };
 
 exports.getBusTripSummary = async (busId) => {
-  const trips = await Trip.find({ busId }).sort({ startTime: -1 }).lean();
+  const trips = await Trip.find({ busId })
+    .populate("events.removedTire", "tireCode")
+    .populate("events.installedTire", "tireCode")
+    .sort({ startTime: -1 })
+    .lean();
 
   const summaries = [];
 
@@ -203,6 +207,26 @@ exports.getBusTripSummary = async (busId) => {
       status = trip.endStatus === "aborted" ? "aborted" : "completed";
     }
 
+    const replacementEvents = (trip.events || [])
+      .filter((event) => event.removedTire || event.installedTire)
+      .sort((a, b) => {
+        const aDistance = Number(a.distanceAtEvent || 0);
+        const bDistance = Number(b.distanceAtEvent || 0);
+        if (aDistance !== bDistance) {
+          return aDistance - bDistance;
+        }
+        return new Date(a.time || trip.startTime) - new Date(b.time || trip.startTime);
+      })
+      .map((event) => ({
+        eventType: event.type || "replacement",
+        slotPosition: event.slotPosition || null,
+        removedTire: event.removedTire?.tireCode || "—",
+        installedTire: event.installedTire?.tireCode || "—",
+        distanceAtEvent: event.distanceAtEvent ?? null,
+        dispatchType: event.dispatchType || null,
+        time: event.time || null,
+      }));
+
     summaries.push({
       tripId: trip._id,
       startTime: trip.startTime,
@@ -211,6 +235,7 @@ exports.getBusTripSummary = async (busId) => {
       abortReason: trip.endReason || null,
       distanceTravelled,
       slots: slotMap,
+      replacements: replacementEvents,
     });
   }
 
