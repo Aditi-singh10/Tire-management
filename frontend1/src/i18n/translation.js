@@ -73,6 +73,7 @@ export const translations = {
         "Tire {tireCode} is being carried as an emergency tire on Bus {busNumber} for immediate replacement in case of a puncture or other issues during the trip.",
       dropEmergencyTire: "Drop Emergency Tire",
       selectReason: "Select Reason",
+      kmServed: "km served",
       unmountReason: {
         puncture: "Puncture",
         wear: "Wear",
@@ -271,6 +272,7 @@ export const translations = {
         "टायर {tireCode} को बस {busNumber} पर आपातकालीन टायर के रूप में ले जाया जा रहा है ताकि पंक्चर या अन्य समस्याओं पर तुरंत बदल सकें।",
       dropEmergencyTire: "आपातकालीन टायर हटाएँ",
       selectReason: "कारण चुनें",
+      kmServed: "किमी सेवा",
       unmountReason: {
         puncture: "पंक्चर",
         wear: "घिसावट",
