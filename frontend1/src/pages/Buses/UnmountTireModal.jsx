@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 // import axios from "axios";
 import { unmountEmergencyTire, unmountTire } from "../../api/busApi";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function UnmountTireModal({
   slot,
@@ -11,7 +12,7 @@ export default function UnmountTireModal({
   onDone,
 }) {
   const [reason, setReason] = useState("");
-
+  const { t } = useLanguage();
   const handleUnmount = async () => {
     try {
        if (isEmergency) {
@@ -37,11 +38,12 @@ export default function UnmountTireModal({
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <motion.div className="bg-white p-6 rounded-xl w-96">
         <h3 className="text-lg font-bold mb-2">
-           {isEmergency ? "Drop Emergency Tire" : "Unmount Tire"}
+            {isEmergency ? t("buses.dropEmergencyTire") : t("buses.unmountTire")}
         </h3>
 
         <p className="mb-3 text-sm">
-          Tire: <b>{isEmergency ? slot.tireCode : slot.tireId.tireCode}</b>
+          {t("history.tire")}:{" "}
+          <b>{isEmergency ? slot.tireCode : slot.tireId.tireCode}</b>
         </p>
 
         <select
@@ -49,21 +51,25 @@ export default function UnmountTireModal({
           value={reason}
           onChange={(e) => setReason(e.target.value)}
         >
-          <option value="">Select Reason</option>
-          <option value="Puncture">Puncture</option>
-          <option value="Wear">Wear</option>
-          <option value="Replacement">Replacement</option>
-          <option value="Maintenance">Maintenance</option>
+          <option value="">{t("buses.selectReason")}</option>
+          <option value="Puncture">{t("buses.unmountReason.puncture")}</option>
+          <option value="Wear">{t("buses.unmountReason.wear")}</option>
+          <option value="Replacement">
+            {t("buses.unmountReason.replacement")}
+          </option>
+          <option value="Maintenance">
+            {t("buses.unmountReason.maintenance")}
+          </option>
         </select>
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose}>Cancel</button>
+         <button onClick={onClose}>{t("common.cancel")}</button>
           <button
             onClick={handleUnmount}
             disabled={!reason}
             className="bg-red-600 text-white px-4 py-2 rounded-lg"
           >
-            Unmount
+            {t("buses.unmountTire")}
           </button>
         </div>
       </motion.div>

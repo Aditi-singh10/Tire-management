@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 // import { mountTire } from "../../api/busApi";
 import { mountEmergencyTire, mountTire } from "../../api/busApi";
 import { getTires } from "../../api/tireApi";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function MountTireModal({
   busId,
@@ -15,6 +16,7 @@ export default function MountTireModal({
   const [tires, setTires] = useState([]);
   const [tireId, setTireId] = useState("");
   const [loading, setLoading] = useState(false);
+   const { t } = useLanguage();
 
   useEffect(() => {
     getTires().then((res) =>
@@ -49,12 +51,12 @@ export default function MountTireModal({
         className="bg-white p-6 rounded-xl w-96"
       >
         <h3 className="text-lg font-bold mb-2">
-          {isEmergency ? "Pick Emergency Tire" : "Mount Tire"}
+          {isEmergency ? t("buses.pickEmergencyTire") : t("buses.mountTire")}
         </h3>
 
         {!isEmergency && (
           <p className="text-sm mb-4">
-            Slot: <b>{slotPosition}</b>
+           {t("history.slot")}: <b>{slotPosition}</b>
           </p>
         )}
 
@@ -62,7 +64,7 @@ export default function MountTireModal({
           className="w-full border p-3 rounded-lg mb-4"
           onChange={(e) => setTireId(e.target.value)}
         >
-          <option value="">Select Tire</option>
+          <option value="">{t("tires.selectTire")}</option>
           {tires.map((t) => (
             <option key={t._id} value={t._id}>
               {t.tireCode}
@@ -72,21 +74,21 @@ export default function MountTireModal({
 
         {isEmergency && selectedTire && busNumber && (
           <p className="text-sm text-slate-600 mb-4">
-            Tire <b>{selectedTire.tireCode}</b> is being carried
-            as an emergency tire on Bus <b>{busNumber}</b> for
-            immediate replacement in case of a puncture or other
-            issues during the trip.
+            {t("buses.emergencyCarryInfo", {
+              tireCode: selectedTire.tireCode,
+              busNumber,
+            })}
           </p>
         )}
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose}>Cancel</button>
+           <button onClick={onClose}>{t("common.cancel")}</button>
           <button
             onClick={handleMount}
             disabled={loading}
             className="bg-green-600 text-white px-4 py-2 rounded-lg"
           >
-             {isEmergency ? "Carry" : "Mount"}
+             {isEmergency ? t("buses.carry") : t("buses.mount")}
           </button>
         </div>
       </motion.div>

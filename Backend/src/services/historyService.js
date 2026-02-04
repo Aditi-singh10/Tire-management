@@ -2,6 +2,7 @@ const TireHistory = require("../models/tireHistoryModel");
 const Trip = require("../models/tripModel");
 const BusTireSlot = require("../models/busTireSlotModel");
 const Bus = require("../models/busModel");
+const Tire = require("../models/tireModel")
 
 /**
  * Get history of a bus
@@ -17,10 +18,32 @@ exports.getBusHistory = async (busId) => {
  * Get history of a tire
  */
 exports.getTireHistory = async (tireId) => {
-  const history = await TireHistory.find({ tireId })
-    .populate("busId", "busNumber")
-    .populate("tireId", "tireCode maxLifeKm")
-    .sort({ startTime: -1 });
+     const [historyRows, tire] = await Promise.all([
+    TireHistory.find({ tireId })
+      .populate("busId", "busNumber")
+      .populate("tireId", "tireCode maxLifeKm")
+      .sort({ startTime: -1 }),
+    Tire.findById(tireId).lean(),
+  ]);
+
+  const history = historyRows.map((item) => {
+    const data = item.toObject();
+    const startDistance = Number(data.startDistance || 0);
+    const endDistance =
+      data.endDistance === null || data.endDistance === undefined
+        ? startDistance
+        : Number(data.endDistance || 0);
+    const derivedKm =
+      Number(data.kmServed || 0) > 0
+        ? Number(data.kmServed || 0)
+        : Math.max(0, endDistance - startDistance);
+
+    return {
+      ...data,
+      kmServed: derivedKm,
+    };
+  });
+  
 
   let active = history.find((h) => !h.endTime) || null;
 
@@ -53,6 +76,21 @@ exports.getTireHistory = async (tireId) => {
     }
   }
 
+   const currentCode = tire?.tireCode || null;
+  const currentDistance = Number(tire?.currentLifeKm || 0);
+  const pastDistance = history.reduce((sum, item) => {
+    const code =
+      item.tireCodeSnapshot ||
+      item.tireId?.tireCode ||
+      currentCode;
+    if (currentCode && code && code !== currentCode) {
+      return sum + Number(item.kmServed || 0);
+    }
+    return sum;
+  }, 0);
+  const totalDistance = pastDistance + currentDistance;
+  const hasRepairHistory = pastDistance > 0 && currentCode;
+
   return {
     current: active
       ? {
@@ -64,6 +102,13 @@ exports.getTireHistory = async (tireId) => {
         }
       : null,
     history,
+     metrics: {
+      currentCode,
+      currentDistance,
+      pastDistance,
+      totalDistance,
+      hasRepairHistory,
+    },
   };
 };
 
@@ -124,9 +169,18 @@ exports.getBusTripSummary = async (busId) => {
         ? trip.totalDistance
         : trip.actualDistance ?? 0;
 
-    //  Build slot → tire mapping
+    //  Build slot = tire mapping
     const slotMap = tireHistories.map((th) => {
       const mountedTill = th.endTime || new Date();
+      const startDistance = Number(th.startDistance || 0);
+      const endDistance =
+        th.endDistance === null || th.endDistance === undefined
+          ? distanceTravelled
+          : Number(th.endDistance || 0);
+      const derivedKm =
+        Number(th.kmServed || 0) > 0
+          ? Number(th.kmServed || 0)
+          : Math.max(0, endDistance - startDistance);
 
       const durationHours = Math.round(
         (mountedTill - new Date(th.startTime)) / (1000 * 60 * 60)
@@ -135,10 +189,12 @@ exports.getBusTripSummary = async (busId) => {
       return {
         slotPosition: th.slotPosition,
         tireCode: th.tireCodeSnapshot || th.tireId?.tireCode || "—",
-        kmServed: th.kmServed,
+        kmServed: derivedKm,
         mountedFrom: th.startTime,
         mountedTill: th.endTime,
         durationHours,
+        startDistance,
+        endDistance,
       };
     });
 

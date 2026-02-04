@@ -8,14 +8,17 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-const menu = [
-  { name: "Buses", icon: Bus, path: "/buses" },
-  { name: "Tires", icon: Disc3, path: "/tires" },
-  { name: "Trips", icon: Route, path: "/trips" },
-  { name: "History", icon: History, path: "/history" },
-];
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function Sidebar() {
+  const { t } = useLanguage();
+  const menu = [
+    { name: t("nav.buses"), icon: Bus, path: "/buses" },
+    { name: t("nav.tires"), icon: Disc3, path: "/tires" },
+    { name: t("nav.trips"), icon: Route, path: "/trips" },
+    { name: t("nav.history"), icon: History, path: "/history" },
+  ];
+
   return (
     <motion.aside
       initial={{ x: -200, opacity: 0 }}
@@ -24,7 +27,7 @@ export default function Sidebar() {
       className="w-64 bg-slate-900 text-white min-h-screen fixed left-0 top-0"
     >
       <div className="p-6 text-xl font-bold tracking-wide border-b border-slate-700">
-        Fleet Admin
+        {t("app.admin")}
       </div>
 
       <nav className="mt-4 flex flex-col gap-1 px-3">

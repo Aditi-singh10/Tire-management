@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function TireCard({ tire, onRepair }) {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function TireCard({ tire, onRepair }) {
   const maxKm = tire?.maxKm ?? 0;
   const status = tire?.status ?? "unknown";
   const canRepair = status === "expired" || status === "punctured";
-
+  const { t } = useLanguage();
   const usage =
     maxKm > 0 ? Math.min((kmUsed / maxKm) * 100, 100) : 0;
 
@@ -31,18 +32,24 @@ export default function TireCard({ tire, onRepair }) {
               }}
               className="text-xs px-2 py-1 rounded bg-blue-600 text-white"
             >
-              Repair
+               {t("tires.repair")}
             </button>
           )}
           <span className="text-xs px-2 py-1 rounded bg-gray-100">
-            {status.toUpperCase()}
+             {(t(`tires.status.${status}`) || status).toUpperCase()}
           </span>
         </div>
       </div>
 
-      <p>Used: {kmUsed} km</p>
-      <p>Max: {maxKm} km</p>
-      <p>Usage: {usage.toFixed(1)}%</p>
+      <p>
+        {t("tires.currentLife")}: {kmUsed} km
+      </p>
+      <p>
+        {t("tires.maxLife")}: {maxKm} km
+      </p>
+      <p>
+        {t("history.usage")}: {usage.toFixed(1)}%
+      </p>
 
       <div className="mt-2 bg-gray-200 h-2 rounded">
         <div

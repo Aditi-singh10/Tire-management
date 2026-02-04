@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { addTripEvent, endTrip, getTripById } from "../../api/tripApi";
 import { getBusById, getBusTireSlots } from "../../api/busApi";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function EndTripModal({ tripId, onClose, onSuccess }) {
   const [endType, setEndType] = useState("completed");
@@ -13,7 +14,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
   const [emergencyOccurred, setEmergencyOccurred] = useState("no");
   const [replacements, setReplacements] = useState([]);
   const [trip, setTrip] = useState(null);
-
+   const { t } = useLanguage();
   useEffect(() => {
     const loadData = async () => {
       const tripRes = await getTripById(tripId);
@@ -183,10 +184,10 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
         animate={{ scale: 1, opacity: 1 }}
         className="bg-white p-6 rounded-xl w-[32rem] max-h-[85vh] overflow-y-auto"
       >
-        <h3 className="font-bold mb-4">End Trip</h3>
+         <h3 className="font-bold mb-4">{t("trips.endTrip")}</h3>
 
         <div className="mb-4">
-          <p className="font-semibold text-sm mb-2">End type</p>
+           <p className="font-semibold text-sm mb-2">{t("trips.endType")}</p>
           <div className="flex gap-4">
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -200,7 +201,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                   setReason("");
                 }}
               />
-              Completed
+               {t("trips.completed")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -210,12 +211,12 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                 checked={endType === "aborted"}
                 onChange={(e) => setEndType(e.target.value)}
               />
-              Aborted
+             {t("trips.aborted")}
             </label>
           </div>
           {endType === "completed" && trip && (
             <p className="text-xs text-slate-500 mt-2">
-              Planned distance: {trip.totalDistance} km
+                 {t("trips.plannedDistance")}: {trip.totalDistance} km
             </p>
           )}
         </div>
@@ -224,14 +225,14 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
           <>
             <input
               type="number"
-              placeholder="Distance travelled (km)"
+              placeholder={`${t("trips.distanceTravelled")} (km)`}
               className="w-full border p-2 mb-3 rounded"
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
             />
 
             <textarea
-              placeholder="Reason for ending trip"
+               placeholder={t("trips.endReason")}
               className="w-full border p-2 mb-3 rounded"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
@@ -241,7 +242,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
 
         <div className="border-t pt-4 mt-2">
           <p className="font-semibold text-sm mb-2">
-            Emergency replacement during trip?
+              {t("trips.emergencyReplacement")}
           </p>
           <div className="flex gap-4 mb-3">
             <label className="flex items-center gap-2 text-sm">
@@ -255,7 +256,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                   setReplacements([]);
                 }}
               />
-              No
+               {t("trips.no")}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -265,15 +266,14 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                 checked={emergencyOccurred === "yes"}
                 onChange={(e) => setEmergencyOccurred(e.target.value)}
               />
-              Yes
+              {t("trips.yes")}
             </label>
           </div>
 
           {emergencyOccurred === "yes" && (
             <>
               <p className="text-xs text-slate-500 mb-3">
-                Select the slot where a tire was defected, choose the emergency
-                tire used, and log the km at which it happened.
+                  {t("trips.emergencyReplacementIntro")}
               </p>
 
               {replacements.map((replacement, index) => {
@@ -288,14 +288,14 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <p className="font-semibold text-sm">
-                        Emergency replacement {index + 1}
+                         {t("trips.emergencyReplacementLabel")} {index + 1}
                       </p>
                       <button
                         type="button"
                         className="text-xs text-red-600"
                         onClick={() => removeReplacement(index)}
                       >
-                        Remove
+                          {t("trips.remove")}
                       </button>
                     </div>
 
@@ -306,7 +306,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                         updateReplacement(index, "slotPosition", e.target.value)
                       }
                     >
-                      <option value="">Select Slot</option>
+                       <option value="">{t("trips.selectSlot")}</option>
                       {slots.map((slotItem) => (
                         <option
                           key={slotItem._id}
@@ -319,7 +319,8 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
 
                     {slot?.tireId && (
                       <p className="text-xs text-red-600 mb-2">
-                        Defected tire: <b>{slot.tireId.tireCode}</b>
+                             {t("trips.defectedTire")}:{" "}
+                        <b>{slot.tireId.tireCode}</b>
                       </p>
                     )}
 
@@ -330,9 +331,9 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                         updateReplacement(index, "eventType", e.target.value)
                       }
                     >
-                      <option value="">Select Defect Reason</option>
-                      <option value="puncture">Puncture</option>
-                      <option value="expired">Damage</option>
+                       <option value="">{t("trips.selectDefectReason")}</option>
+                      <option value="puncture">{t("trips.puncture")}</option>
+                      <option value="expired">{t("trips.damage")}</option>
                     </select>
 
                     <select
@@ -346,7 +347,7 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                         )
                       }
                     >
-                      <option value="">Select Emergency Tire</option>
+                       <option value="">{t("trips.selectEmergencyTire")}</option>
                       {emergencyTires.map((tire) => (
                         <option
                           key={tire._id}
@@ -372,20 +373,20 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                         )
                       }
                     >
-                      <option value="outbound">Going to destination</option>
-                      <option value="return">Coming back</option>
+                      <option value="outbound">{t("trips.dispatchOutbound")}</option>
+                      <option value="return">{t("trips.dispatchReturn")}</option>
                     </select>
 
                     {trip?.totalDistance ? (
                       <p className="text-xs text-slate-500 mb-2">
-                        One-way distance: {trip.totalDistance / 2} km
+                        {t("trips.oneWayDistance")}: {trip.totalDistance / 2} km
                       </p>
                     ) : null}
 
 
                     <input
                       type="number"
-                       placeholder="Distance in leg (km)"
+                         placeholder={t("trips.distanceInLeg")}
                       className="w-full border p-2 rounded"
                       value={replacement.distanceAtEvent}
                       onChange={(e) =>
@@ -405,20 +406,20 @@ export default function EndTripModal({ tripId, onClose, onSuccess }) {
                 onClick={addReplacement}
                 className="text-sm text-orange-600"
               >
-                + Add emergency replacement
+                {t("trips.addEmergencyReplacement")}
               </button>
             </>
           )}
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose}>Cancel</button>
+          <button onClick={onClose}>{t("common.cancel")}</button>
           <button
             onClick={handleEnd}
             disabled={loading}
             className="bg-red-600 text-white px-4 py-2 rounded-lg"
           >
-            {loading ? "Ending..." : "End Trip"}
+            {loading ? t("trips.ending") : t("trips.endTrip")}
           </button>
         </div>
       </motion.div>

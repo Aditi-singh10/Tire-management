@@ -3,11 +3,13 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { getBuses } from "../../api/busApi";
 import AddBusModal from "./AddBusModal";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function BusList() {
   const [buses, setBuses] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const loadBuses = () => getBuses().then((res) => setBuses(res.data));
 
@@ -19,12 +21,12 @@ export default function BusList() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Buses</h2>
+        <h2 className="text-3xl font-bold">{t("buses.title")}</h2>
         <button
           onClick={() => setShowAdd(true)}
           className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-xl shadow"
         >
-          + Add Bus
+           {t("buses.addBus")}
         </button>
       </div>
 
@@ -42,11 +44,12 @@ export default function BusList() {
               Type: {bus.type || "N/A"}
             </p> */}
             <p className="text-slate-500 mt-1">
-              Slots: <span className="font-medium">{bus.totalSlots}</span>
+             {t("buses.slots")}:{" "}
+              <span className="font-medium">{bus.totalSlots}</span>
             </p>
 
             <div className="mt-4 text-sm text-blue-600 font-medium">
-              View Details →
+               {t("common.viewDetails")}
             </div>
           </motion.div>
         ))}

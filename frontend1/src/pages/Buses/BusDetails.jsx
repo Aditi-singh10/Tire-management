@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { getBusById, getBusTireSlots } from "../../api/busApi";
 import MountTireModal from "./MountTire";
 import UnmountTireModal from "./UnmountTireModal";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function BusDetails() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function BusDetails() {
   const [activeSlot, setActiveSlot] = useState(null);
   const [mode, setMode] = useState(null); // mount | unmount
   const [isEmergency, setIsEmergency] = useState(false);
+  const { t } = useLanguage();
 
   const loadData = async () => {
     const [busRes, slotRes] = await Promise.all([
@@ -34,9 +36,7 @@ export default function BusDetails() {
   /* ================= NORMAL SLOTS ================= */
   const normalSlots = Array.from({ length: bus.totalSlots }, (_, i) => {
     const slotPosition = `slot-${i + 1}`;
-    const mountedSlot = dbSlots.find(
-      (s) => s.slotPosition === slotPosition
-    );
+    const mountedSlot = dbSlots.find((s) => s.slotPosition === slotPosition);
 
     return {
       slotPosition,
@@ -47,8 +47,7 @@ export default function BusDetails() {
 
   /* ================= EMERGENCY SLOTS ================= */
   const emergencyMounted = bus.emergencyTires || [];
-  const emergencyEmpty =
-    bus.emergencyTireCount - emergencyMounted.length;
+  const emergencyEmpty = bus.emergencyTireCount - emergencyMounted.length;
 
   return (
     <motion.div
@@ -57,20 +56,18 @@ export default function BusDetails() {
       className="max-w-6xl mx-auto p-6"
     >
       <h2 className="text-3xl font-bold mb-2">
-        🚍 Bus {bus.busNumber}
+        🚍 {t("trips.bus")} {bus.busNumber}
       </h2>
 
       <button
         onClick={() => navigate(`/history/bus-summary/${bus._id}`)}
         className="mb-6 bg-slate-800 text-white px-4 py-2 rounded-lg"
       >
-        View Bus History
+        {t("buses.viewBusHistory")}
       </button>
 
       {/* ================= NORMAL TIRES ================= */}
-      <h3 className="text-xl font-semibold mb-3">
-        Normal Tire Slots
-      </h3>
+      <h3 className="text-xl font-semibold mb-3">{t("buses.slots")}</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
         {normalSlots.map((slot) => (
@@ -79,17 +76,15 @@ export default function BusDetails() {
             whileHover={{ scale: 1.03 }}
             className="bg-white p-4 rounded-xl shadow border"
           >
-            <p className="text-xs text-slate-500">Slot</p>
+            <p className="text-xs text-slate-500">{t("history.slot")}</p>
             <p className="font-semibold">{slot.slotPosition}</p>
 
             <p className="mt-2 text-sm">
-              Tire:{" "}
+               {t("history.tire")}:{" "}
               {slot.mounted ? (
-                <span className="font-medium">
-                  {slot.data.tireId.tireCode}
-                </span>
+                <span className="font-medium">{slot.data.tireId.tireCode}</span>
               ) : (
-                <span className="text-green-600">Empty</span>
+                <span className="text-green-600">{t("common.empty")}</span>
               )}
             </p>
 
@@ -103,7 +98,7 @@ export default function BusDetails() {
                   }}
                   className="w-full bg-red-600 text-white py-2 rounded-lg"
                 >
-                  Unmount Tire
+                    {t("buses.unmountTire")}
                 </button>
               ) : (
                 <button
@@ -114,7 +109,7 @@ export default function BusDetails() {
                   }}
                   className="w-full bg-green-600 text-white py-2 rounded-lg"
                 >
-                  Mount Tire
+                  {t("buses.mountTire")}
                 </button>
               )}
             </div>
@@ -123,9 +118,7 @@ export default function BusDetails() {
       </div>
 
       {/* ================= EMERGENCY TIRES ================= */}
-      <h3 className="text-xl font-semibold mb-3 text-amber-700">
-        Spare Tires
-      </h3>
+      <h3 className="text-xl font-semibold mb-3 text-amber-700"> {t("buses.spareTires")}</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Mounted Emergency Tires */}
@@ -134,9 +127,7 @@ export default function BusDetails() {
             key={tire._id}
             className="bg-amber-50 p-4 rounded-xl border border-amber-300"
           >
-            <p className="text-xs text-amber-700">
-              Mounted Emergency Tire
-            </p>
+            <p className="text-xs text-amber-700"> {t("buses.mountedEmergencyTire")}</p>
             <p className="font-semibold">{tire.tireCode}</p>
 
             <button
@@ -147,7 +138,7 @@ export default function BusDetails() {
               }}
               className="mt-4 w-full bg-amber-600 text-white py-2 rounded-lg"
             >
-              Drop Spare Tire
+              {t("buses.dropSpareTire")}
             </button>
           </motion.div>
         ))}
@@ -158,9 +149,7 @@ export default function BusDetails() {
             key={i}
             className="bg-amber-100 p-4 rounded-xl border border-dashed border-amber-400"
           >
-            <p className="text-xs text-amber-700">
-              Empty Emergency Slot
-            </p>
+            <p className="text-xs text-amber-700">{t("buses.emptyEmergencySlot")}</p>
 
             <button
               onClick={() => {
@@ -170,7 +159,7 @@ export default function BusDetails() {
               }}
               className="mt-6 w-full bg-amber-500 text-white py-2 rounded-lg"
             >
-              Pick Spare Tire
+               {t("buses.pickSpareTire")}
             </button>
           </motion.div>
         ))}

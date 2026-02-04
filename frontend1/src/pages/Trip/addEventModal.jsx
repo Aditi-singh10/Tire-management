@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import api from "../../api/axios";
 import { addTripEvent } from "../../api/tripApi";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function AddEventModal({ tripId, onClose }) {
   const [slots, setSlots] = useState([]);
   const [availableTires, setAvailableTires] = useState([]);
-
+  const { t } = useLanguage()
   const [slotPosition, setSlotPosition] = useState("");
   const [removedTire, setRemovedTire] = useState(null);
   const [eventType, setEventType] = useState("");
@@ -81,7 +82,7 @@ export default function AddEventModal({ tripId, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
         className="bg-white p-6 rounded-xl w-96"
       >
-        <h3 className="font-bold mb-4">Add Trip Event</h3>
+        <h3 className="font-bold mb-4">{t("trips.addTripEvent")}</h3>
 
         {/* Slot */}
         <select
@@ -89,7 +90,7 @@ export default function AddEventModal({ tripId, onClose }) {
           value={slotPosition}
           onChange={(e) => setSlotPosition(e.target.value)}
         >
-          <option value="">Select Slot</option>
+              <option value="">{t("trips.selectSlot")}</option>
           {slots.map((s) => (
             <option key={s._id} value={s.slotPosition}>
               {s.slotPosition}
@@ -100,7 +101,7 @@ export default function AddEventModal({ tripId, onClose }) {
         {/* Removed Tire */}
         {removedTire && (
           <div className="text-sm mb-3 text-red-600">
-            Removed Tire: <b>{removedTire.tireCode}</b>
+             {t("trips.removedTire")}: <b>{removedTire.tireCode}</b>
           </div>
         )}
 
@@ -110,9 +111,9 @@ export default function AddEventModal({ tripId, onClose }) {
           value={eventType}
           onChange={(e) => setEventType(e.target.value)}
         >
-          <option value="">Select Reason</option>
-          <option value="puncture">Puncture</option>
-         <option value="expired">Damage</option>
+            <option value="">{t("trips.selectReason")}</option>
+          <option value="puncture">{t("trips.puncture")}</option>
+         <option value="expired">{t("trips.damage")}</option>
 
         </select>
 
@@ -122,7 +123,7 @@ export default function AddEventModal({ tripId, onClose }) {
           value={installedTireId}
           onChange={(e) => setInstalledTireId(e.target.value)}
         >
-          <option value="">Select Replacement Tire</option>
+           <option value="">{t("trips.selectReplacementTire")}</option>
           {availableTires.map((t) => (
             <option key={t._id} value={t._id}>
               {t.tireCode}
@@ -136,33 +137,33 @@ export default function AddEventModal({ tripId, onClose }) {
           value={dispatchType}
           onChange={(e) => setDispatchType(e.target.value)}
         >
-          <option value="outbound">Going to destination</option>
-          <option value="return">Coming back</option>
+         <option value="outbound">{t("trips.dispatchOutbound")}</option>
+          <option value="return">{t("trips.dispatchReturn")}</option>
         </select>
 
         {oneWayDistance > 0 && (
           <p className="text-xs text-slate-500 mb-2">
-            One-way distance: {oneWayDistance} km
+            {t("trips.oneWayDistance")}: {oneWayDistance} km
           </p>
         )}
 
         {/* Distance */}
         <input
           type="number"
-          placeholder="Distance in leg (km)"
+           placeholder={t("trips.distanceInLeg")}
           className="w-full border p-2 mb-4 rounded"
           value={legDistance}
           onChange={(e) => setLegDistance(e.target.value)}
         />
 
         <div className="flex justify-end gap-2">
-          <button onClick={onClose}>Cancel</button>
+          <button onClick={onClose}>{t("common.cancel")}</button>
           <button
             onClick={handleAdd}
             disabled={loading}
             className="bg-orange-600 text-white px-4 py-2 rounded-lg"
           >
-            {loading ? "Adding..." : "Add Event"}
+            {loading ? t("trips.adding") : t("trips.addEvent")}
           </button>
         </div>
       </motion.div>

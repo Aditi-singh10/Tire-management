@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import api from "../../api/axios";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function TripList() {
   const [trips, setTrips] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const navigate = useNavigate();
+   const { t } = useLanguage();
 
   useEffect(() => {
     api.get("/trips").then((res) => setTrips(res.data));
@@ -28,32 +30,32 @@ export default function TripList() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h2 className="text-2xl font-bold">Trips</h2>
+        <h2 className="text-2xl font-bold">{t("trips.title")}</h2>
            <div className="flex flex-wrap items-center gap-3">
           <label className="text-sm text-slate-600">
-            Status
+             {t("common.status")}
             <select
               className="ml-2 rounded-lg border border-slate-300 px-3 py-2 text-sm"
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
-              <option value="all">All</option>
-              <option value="ongoing">Ongoing</option>
-              <option value="completed">Completed</option>
-              <option value="aborted">Aborted</option>
+             <option value="all">{t("common.all") || "All"}</option>
+              <option value="ongoing">{t("trips.ongoing")}</option>
+              <option value="completed">{t("trips.completed")}</option>
+              <option value="aborted">{t("trips.aborted")}</option>
             </select>
           </label>
           <button
             onClick={() => navigate("/trips/start")}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg"
           >
-            Start Trip
+             {t("trips.startTrip")}
           </button>
         </div>
       </div>
 
       {!filteredTrips.length && (
-        <p className="text-slate-500">No trips yet.</p>
+          <p className="text-slate-500">{t("trips.noTrips")}</p>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -63,10 +65,12 @@ export default function TripList() {
             onClick={() => navigate(`/trips/${trip._id}`)}
             className="bg-white p-4 rounded-xl shadow cursor-pointer"
           >
-            <p className="font-semibold">Bus: {trip.busId?.busNumber || "—"}</p>
+             <p className="font-semibold">
+              {t("trips.bus")}: {trip.busId?.busNumber || "—"}
+            </p>
 
             <p className="text-sm text-slate-500">
-              Distance:{" "}
+              {t("buses.distance")}:{" "}
               {trip.endStatus === "aborted"
                 ? trip.actualDistance
                 : trip.totalDistance}{" "}
@@ -75,11 +79,17 @@ export default function TripList() {
 
             <p className="text-xs mt-2">
               {trip.endStatus === "aborted" ? (
-                <span className="text-red-600 font-semibold">Aborted</span>
+                   <span className="text-red-600 font-semibold">
+                  {t("trips.aborted")}
+                </span>
               ) : trip.endStatus === "completed" ? (
-                <span className="text-green-600 font-semibold">Completed</span>
+                <span className="text-green-600 font-semibold">
+                  {t("trips.completed")}
+                </span>
               ) : (
-                <span className="text-orange-600 font-semibold">Ongoing</span>
+                <span className="text-orange-600 font-semibold">
+                  {t("trips.ongoing")}
+                </span>
               )}
             </p>
           </div>

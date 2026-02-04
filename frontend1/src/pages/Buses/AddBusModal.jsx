@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { createBus } from "../../api/busApi";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function AddBusModal({ onClose, onCreated }) {
   const [busNumber, setBusNumber] = useState("");
@@ -9,17 +10,17 @@ export default function AddBusModal({ onClose, onCreated }) {
   const [status, setStatus] = useState("active");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  const { t } = useLanguage();
   const handleCreate = async () => {
     setError("");
 
     if (!busNumber || !totalSlots) {
-      setError("Bus number and total slots are required");
+      setError(t("errors.busRequired"));
       return;
     }
 
     if (emergencyTireCount < 0) {
-      setError("Emergency tire count cannot be negative");
+      setError(t("errors.emergencyNegative"));
       return;
     }
 
@@ -35,7 +36,7 @@ export default function AddBusModal({ onClose, onCreated }) {
       onCreated();
       onClose();
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to create bus");
+      setError(err?.response?.data?.message || t("errors.createBusFail"));
     } finally {
       setLoading(false);
     }
@@ -48,12 +49,14 @@ export default function AddBusModal({ onClose, onCreated }) {
         animate={{ scale: 1, opacity: 1 }}
         className="bg-white rounded-2xl p-6 w-96 shadow-xl"
       >
-        <h3 className="text-xl font-bold mb-4">➕ Add Bus</h3>
+        <h3 className="text-xl font-bold mb-4">
+          ➕ {t("buses.addBus").replace("+ ", "")}
+        </h3>
 
         {/* Bus Number */}
         <div className="mb-3">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Bus Number
+            {t("buses.busNumber")}
           </label>
           <input
             className="w-full border p-3 rounded-lg"
@@ -65,7 +68,7 @@ export default function AddBusModal({ onClose, onCreated }) {
         {/* Total Slots */}
         <div className="mb-3">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Total Slots
+            {t("buses.totalSlots")}
           </label>
           <input
             type="number"
@@ -79,7 +82,7 @@ export default function AddBusModal({ onClose, onCreated }) {
         {/* Emergency Tire Count */}
         <div className="mb-3">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Emergency Tires (Extra)
+           {t("buses.emergencyTires")}
           </label>
           <input
             type="number"
@@ -91,23 +94,23 @@ export default function AddBusModal({ onClose, onCreated }) {
             }
           />
           <p className="text-xs text-slate-500 mt-1">
-            Number of extra tires carried for emergency replacement
+            {t("buses.emergencyHint")}
           </p>
         </div>
 
         {/* Status */}
         <div className="mb-3">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Status
+            {t("common.status")}
           </label>
           <select
             className="w-full border p-3 rounded-lg"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            <option value="active">Active</option>
-            <option value="maintenance">Maintenance</option>
-            <option value="inactive">Inactive</option>
+             <option value="active">{t("common.active")}</option>
+            <option value="maintenance">{t("common.maintenance")}</option>
+            <option value="inactive">{t("common.inactive")}</option>
           </select>
         </div>
 
@@ -115,14 +118,14 @@ export default function AddBusModal({ onClose, onCreated }) {
 
         <div className="flex justify-end gap-2">
           <button onClick={onClose} className="px-4 py-2 text-slate-600">
-            Cancel
+             {t("common.cancel")}
           </button>
           <button
             onClick={handleCreate}
             disabled={loading}
             className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-lg"
           >
-            {loading ? "Creating..." : "Create"}
+            {loading ? t("common.creating") : t("common.create")}
           </button>
         </div>
       </motion.div>

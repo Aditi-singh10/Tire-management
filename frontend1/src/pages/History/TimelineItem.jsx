@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 import clsx from "clsx";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const iconMap = {
   puncture: AlertTriangle,
@@ -19,6 +20,15 @@ export default function TimelineItem({ item, isLast }) {
   const pillColor = item.isEmergency
     ? "bg-amber-100 text-amber-700"
     : "bg-blue-100 text-blue-600";
+     const { t } = useLanguage();
+  const translatedReason = item.removalReason
+    ? t(`history.reason.${item.removalReason}`)
+    : t("history.mountedLabel");
+  const reasonLabel =
+    translatedReason?.startsWith("history.reason.")
+      ? item.removalReason?.replace("_", " ").toUpperCase()
+      : translatedReason;
+
   //  Duration (hours)
   const durationHours =
     item.endTime &&
@@ -58,52 +68,53 @@ export default function TimelineItem({ item, isLast }) {
         {/* Reason */}
         <p className="font-semibold">
          {item.isEmergency
-            ? "EMERGENCY TIRE"
-            : item.removalReason === "trip_end"
-            ? "TRIP COMPLETED"
-            : item.removalReason
-            ? item.removalReason.replace("_", " ").toUpperCase()
-            : "MOUNTED"}
+           ? t("history.emergencyTire")
+            : reasonLabel}
         </p>
 
         {/* Bus */}
         {item.busId?.busNumber && (
           <p className="text-sm text-slate-700">
-            Bus: <b>{item.busId.busNumber}</b>
+            {t("history.bus")}: <b>{item.busId.busNumber}</b>
           </p>
         )}
 
         {/* Slot */}
          {item.slotPosition && !item.isEmergency && (
           <p className="text-sm text-slate-700">
-            Slot: <b>{item.slotPosition}</b>
+            {t("history.slot")}: <b>{item.slotPosition}</b>
           </p>
         )}
 
         {/* Tire */}
          {(item.tireCodeSnapshot || item.tireId?.tireCode) && (
           <p className="text-sm text-slate-700">
-            Tire:{" "}
+            {t("history.tire")}:{" "}
             <b>{item.tireCodeSnapshot || item.tireId?.tireCode}</b>
           </p>
         )}
 
         {/* KM */}
-        <p className="text-sm text-slate-600">Distance: {item.kmServed} km</p>
+          <p className="text-sm text-slate-600">
+          {t("history.distance")}: {item.kmServed} km
+        </p>
 
         {/* Usage */}
         {item.tireId?.maxLifeKm ? (
           <p className="text-sm text-slate-600">
-            Usage: {Math.round((item.kmServed / item.tireId.maxLifeKm) * 100)}%
+           {t("history.usage")}:{" "}
+            {Math.round((item.kmServed / item.tireId.maxLifeKm) * 100)}%
           </p>
         ) : (
-          <p className="text-sm text-slate-400 italic">Usage: N/A</p>
+          <p className="text-sm text-slate-400 italic">
+            {t("history.usage")}: {t("common.na")}
+          </p>
         )}
 
         {/* Duration */}
         {durationHours && (
           <p className="text-sm text-slate-600">
-            Duration: {durationHours} hrs
+             {t("history.duration")}: {durationHours} hrs
           </p>
         )}
 
@@ -113,15 +124,15 @@ export default function TimelineItem({ item, isLast }) {
             className={`inline-block mt-1 text-xs px-2 py-1 rounded ${pillColor}`}
           >
             {item.isEmergency
-              ? "Currently Carried"
-              : "Currently Mounted"}
+              ? t("history.currentlyCarried")
+              : t("history.currentlyMounted")}
           </span>
         )}
 
         {/* Time */}
         <p className="text-xs text-slate-400 mt-1">
           {new Date(item.startTime).toLocaleString()} →{" "}
-          {item.endTime ? new Date(item.endTime).toLocaleString() : "Active"}
+         {item.endTime ? new Date(item.endTime).toLocaleString() : t("history.active")}
         </p>
       </motion.div>
     </div>

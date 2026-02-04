@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { repairTire } from "../../api/tireApi";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function RepairTireModal({
   tire,
@@ -10,12 +11,15 @@ export default function RepairTireModal({
   const [newCode, setNewCode] = useState("");
   const [maxLifeKm, setMaxLifeKm] = useState("");
    const requiresNewIdentity = tire?.status === "expired";
+  const { t } = useLanguage();
   const trimmedCode = newCode.trim();
   const parsedMaxLifeKm = Number(maxLifeKm);
   
-      const canSubmit = requiresNewIdentity
-    ? trimmedCode.length > 0 && Number.isFinite(parsedMaxLifeKm) &&
-      parsedMaxLifeKm > 0:true;
+    const canSubmit = requiresNewIdentity
+    ? trimmedCode.length > 0 &&
+      Number.isFinite(parsedMaxLifeKm) &&
+      parsedMaxLifeKm > 0
+    : true;
 
   const handleRepair = async () => {
     if (!canSubmit) return;
@@ -39,23 +43,23 @@ export default function RepairTireModal({
         className="bg-white rounded-xl p-6 w-96"
       >
         <h3 className="text-lg font-bold mb-4">
-          Repair Tire {tire.tireCode}
+           {t("tires.repairTire")} {tire.tireCode}
         </h3>
 
        {requiresNewIdentity ? (
           <>
             <p className="text-sm text-slate-600 mb-3">
-              Expired tires must be assigned a new ID and life.
+                {t("tires.repairExpiredHint")}
             </p>
             <input
-              placeholder="New Tire Code (e.g. A01-R1)"
+               placeholder={t("tires.newTireCode")}
               className="w-full border p-2 rounded mb-3"
               value={newCode}
               onChange={(e) => setNewCode(e.target.value)}
             />
 
           <input
-              placeholder="Max Life Km"
+              placeholder={t("tires.maxLifeKm")}
               type="number"
               className="w-full border p-2 rounded mb-4"
               value={maxLifeKm}
@@ -64,8 +68,7 @@ export default function RepairTireModal({
           </>
         ) : (
           <p className="text-sm text-slate-600 mb-4">
-            This tire will be repaired and returned to
-            availability with the same ID.
+           {t("tires.repairSameIdHint")}
           </p>
         )}
 
@@ -74,14 +77,14 @@ export default function RepairTireModal({
             onClick={onClose}
             className="px-4 py-2 rounded text-slate-600"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleRepair}
             className="bg-blue-600 text-white px-4 py-2 rounded disabled:cursor-not-allowed disabled:opacity-60"
             disabled={!canSubmit}
           >
-            Repair
+             {t("tires.repair")}
           </button>
         </div>
       </motion.div>
